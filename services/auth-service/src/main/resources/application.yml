@@ -1,0 +1,28 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/kyronic_auth
+    username: kyronic
+    password: kyronic
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+security:
+  jwt:
+    secret: kyronic-local-jwt-signing-secret-2026
+    issuer: kyronic-auth-service
+    audience: kyronic-risk-engine
+    access-token-ttl-seconds: 600
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
