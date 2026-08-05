@@ -62,7 +62,7 @@ public class OltsIncidentController {
 
     @GetMapping("/{incidentId}")
     @Operation(summary = "Get incident", description = "Fetch one captured incident by its system-generated incidentId.")
-    public ApiResponse<IncidentResponse> get(@PathVariable String incidentId) {
+    public ApiResponse<IncidentResponse> get(@PathVariable("incidentId") String incidentId) {
         String correlationId = correlationId();
         IncidentResponse response = service.getByIncidentId(incidentId)
                 .map(mapper::toResponse)
@@ -72,7 +72,7 @@ public class OltsIncidentController {
 
     @PutMapping("/{incidentId}")
     @Operation(summary = "Update incident", description = "Update a draft OLTS incident by its system-generated incidentId.")
-    public ApiResponse<IncidentResponse> update(@PathVariable String incidentId,
+    public ApiResponse<IncidentResponse> update(@PathVariable("incidentId") String incidentId,
                                                 @Valid @RequestBody UpdateIncidentRequest request,
                                                 @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
@@ -84,7 +84,7 @@ public class OltsIncidentController {
 
     @DeleteMapping("/{incidentId}")
     @Operation(summary = "Delete incident", description = "Soft delete a draft OLTS incident by its system-generated incidentId.")
-    public ApiResponse<Void> delete(@PathVariable String incidentId, @AuthenticationPrincipal Jwt jwt) {
+    public ApiResponse<Void> delete(@PathVariable("incidentId") String incidentId, @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
         service.delete(incidentId, AuthenticatedUser.fromJwt(jwt).userId(), correlationId);
         return ApiResponse.success("Incident deleted successfully", null, correlationId);
@@ -92,7 +92,7 @@ public class OltsIncidentController {
 
     @PostMapping("/{incidentId}/submit")
     @Operation(summary = "Submit incident", description = "Submit a draft incident for department-head authorization.")
-    public ApiResponse<IncidentResponse> submit(@PathVariable String incidentId,
+    public ApiResponse<IncidentResponse> submit(@PathVariable("incidentId") String incidentId,
                                                 @Valid @RequestBody WorkflowActionRequest request,
                                                 @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
@@ -104,7 +104,7 @@ public class OltsIncidentController {
 
     @PostMapping("/{incidentId}/authorization/start")
     @Operation(summary = "Start authorization review", description = "Move a pending incident into authorization review.")
-    public ApiResponse<IncidentResponse> startReview(@PathVariable String incidentId,
+    public ApiResponse<IncidentResponse> startReview(@PathVariable("incidentId") String incidentId,
                                                      @Valid @RequestBody WorkflowActionRequest request,
                                                      @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
@@ -116,7 +116,7 @@ public class OltsIncidentController {
 
     @PostMapping("/{incidentId}/authorization/approve")
     @Operation(summary = "Approve incident", description = "Authorize a submitted incident as the resolved department head or delegate.")
-    public ApiResponse<IncidentResponse> approve(@PathVariable String incidentId,
+    public ApiResponse<IncidentResponse> approve(@PathVariable("incidentId") String incidentId,
                                                  @Valid @RequestBody WorkflowActionRequest request,
                                                  @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
@@ -128,7 +128,7 @@ public class OltsIncidentController {
 
     @PostMapping("/{incidentId}/authorization/reject")
     @Operation(summary = "Reject incident", description = "Reject a submitted incident. A reason is required.")
-    public ApiResponse<IncidentResponse> reject(@PathVariable String incidentId,
+    public ApiResponse<IncidentResponse> reject(@PathVariable("incidentId") String incidentId,
                                                 @Valid @RequestBody WorkflowActionRequest request,
                                                 @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
@@ -140,7 +140,7 @@ public class OltsIncidentController {
 
     @PostMapping("/{incidentId}/authorization/return")
     @Operation(summary = "Return incident for correction", description = "Return a submitted incident to the inputter for correction. A reason is required.")
-    public ApiResponse<IncidentResponse> returnForCorrection(@PathVariable String incidentId,
+    public ApiResponse<IncidentResponse> returnForCorrection(@PathVariable("incidentId") String incidentId,
                                                              @Valid @RequestBody WorkflowActionRequest request,
                                                              @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();

@@ -1,0 +1,10 @@
+server:
+  port: 8089
+spring:
+  application:
+    name: process-flows-service
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

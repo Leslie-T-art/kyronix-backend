@@ -90,6 +90,7 @@ public class OltsIncident {
                                       UUID responsiblePersonId, String responsiblePersonName, Instant now) {
         validateDates(incidentDate, discoveryDate);
         validateAmounts(grossLoss, recoveries, potentialLoss);
+        validateCurrencyCode(currencyCode);
         Objects.requireNonNull(description, "description is required");
         Objects.requireNonNull(responsiblePersonId, "responsiblePersonId is required");
         if (description.isBlank()) {
@@ -180,6 +181,7 @@ public class OltsIncident {
         }
         validateDates(incidentDate, discoveryDate);
         validateAmounts(grossLoss, recoveries, potentialLoss);
+        validateCurrencyCode(currencyCode);
         if (description == null || description.isBlank()) {
             throw new IllegalArgumentException("description is required");
         }
@@ -279,6 +281,12 @@ public class OltsIncident {
         }
         if (recoveries.compareTo(grossLoss) > 0) {
             throw new IllegalArgumentException("recoveries cannot exceed grossLoss");
+        }
+    }
+
+    private static void validateCurrencyCode(String currencyCode) {
+        if (currencyCode == null || !currencyCode.matches("^[A-Z]{3}$")) {
+            throw new IllegalArgumentException("currencyCode must be a valid 3-letter ISO code");
         }
     }
 

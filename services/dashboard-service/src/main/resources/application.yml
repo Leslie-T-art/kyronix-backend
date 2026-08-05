@@ -1,0 +1,10 @@
+server:
+  port: 8086
+spring:
+  application:
+    name: dashboard-service
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

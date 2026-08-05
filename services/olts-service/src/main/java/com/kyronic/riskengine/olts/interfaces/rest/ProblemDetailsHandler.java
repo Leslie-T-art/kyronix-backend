@@ -1,6 +1,7 @@
 package com.kyronic.riskengine.olts.interfaces.rest;
 
 import com.kyronic.riskengine.common.authorization.AuthorizationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -34,6 +35,15 @@ public class ProblemDetailsHandler {
         detail.setTitle("Validation failed");
         detail.setDetail(exception.getMessage());
         detail.setProperty("errorCode", "VALIDATION_ERROR");
+        return detail;
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail handleDataIntegrityViolation(DataIntegrityViolationException exception) {
+        ProblemDetail detail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+        detail.setTitle("Validation failed");
+        detail.setDetail("The request contains invalid data for one or more persisted fields");
+        detail.setProperty("errorCode", "DATA_INTEGRITY_VIOLATION");
         return detail;
     }
 }

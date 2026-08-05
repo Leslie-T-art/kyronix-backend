@@ -9,6 +9,8 @@ import com.kyronic.riskengine.olts.application.service.OltsIncidentService;
 import com.kyronic.riskengine.olts.domain.model.EventType;
 import com.kyronic.riskengine.olts.domain.model.LossCategory;
 import com.kyronic.riskengine.olts.domain.model.Severity;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -29,6 +31,7 @@ class OltsIncidentControllerTest {
 
     private OltsIncidentController controller;
     private Jwt jwt;
+    private Validator validator;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +51,7 @@ class OltsIncidentControllerTest {
                 .claim("userId", "11111111-1111-1111-1111-111111111111")
                 .header("alg", "HS256")
                 .build();
+        validator = Validation.buildDefaultValidatorFactory().getValidator();
         controller = new OltsIncidentController(service, new IncidentMapperImpl());
     }
 
@@ -103,6 +107,26 @@ class OltsIncidentControllerTest {
 
         assertThat(response.success()).isTrue();
         assertThat(response.data()).hasSize(1);
+    }
+
+    @Test
+    void rejectsInvalidCurrencyCodeAtRequestBoundary() {
+        CreateIncidentRequest request = new CreateIncidentRequest(
+                LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 8, 2),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                LossCategory.INTERNAL_FRAUD,
+                EventType.INCIDENT,
+                Severity.HIGH,
+                "System outage detected by branch operations",
+                "string",
+                new BigDecimal("100.00"),
+                new BigDecimal("10.00"),
+                new BigDecimal("5.00")
+        );
+
+        assertThat(validator.validate(request)).isNotEmpty();
     }
 
     private static final class InMemoryStore implements com.kyronic.riskengine.olts.application.service.OltsIncidentStore {
