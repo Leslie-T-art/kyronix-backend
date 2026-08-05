@@ -3,8 +3,29 @@ server:
 spring:
   application:
     name: audit-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/kyronic_platform
+    username: kyronic
+    password: kyronic
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: audit_service
+  flyway:
+    enabled: true
+    default-schema: audit_service
+    schemas: audit_service
+    table: audit_service_schema_history
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+kyronic:
+  audit:
+    enabled: false

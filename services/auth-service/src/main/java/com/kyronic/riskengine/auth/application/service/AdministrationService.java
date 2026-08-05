@@ -47,6 +47,12 @@ public class AdministrationService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public UserResponse getUser(UUID id) {
+        return toUserResponse(userAccountRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("user not found")));
+    }
+
     public UserResponse createUser(UserUpsertRequest request) {
         UserAccount userAccount = new UserAccount(
                 UUID.randomUUID(),
@@ -92,6 +98,12 @@ public class AdministrationService {
         return roleDefinitionRepository.findAll().stream().map(this::toRoleResponse).toList();
     }
 
+    @Transactional(readOnly = true)
+    public RoleDefinitionResponse getRole(UUID id) {
+        return toRoleResponse(roleDefinitionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("role not found")));
+    }
+
     public RoleDefinitionResponse createRole(RoleDefinitionRequest request) {
         RoleDefinition roleDefinition = new RoleDefinition(UUID.randomUUID(), request.code(), request.name(), request.description(), request.active());
         return toRoleResponse(roleDefinitionRepository.save(roleDefinition));
@@ -110,6 +122,12 @@ public class AdministrationService {
 
     public List<ReferenceDataResponse> listReferenceData(ReferenceDataType type) {
         return referenceDataEntryRepository.findByTypeOrderByCodeAsc(type).stream().map(this::toReferenceResponse).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ReferenceDataResponse getReferenceData(UUID id) {
+        return toReferenceResponse(referenceDataEntryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("reference data not found")));
     }
 
     public ReferenceDataResponse createReferenceData(ReferenceDataType type, ReferenceDataRequest request) {

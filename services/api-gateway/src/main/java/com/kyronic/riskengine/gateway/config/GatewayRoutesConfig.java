@@ -13,8 +13,9 @@ public class GatewayRoutesConfig {
         return builder.routes()
                 .route("auth-service", route -> route.path("/api/v1/auth/**").uri("http://localhost:8081"))
                 .route("olts-service", route -> route.path("/api/v1/olts/**").uri("http://localhost:8082"))
-                .route("document-service", route -> route.path("/api/v1/documents/**").uri("http://localhost:8083"))
-                .route("dashboard-service", route -> route.path("/api/v1/dashboard/**").uri("http://localhost:8084"))
+                .route("audit-service", route -> route.path("/api/v1/audit/**").uri("http://localhost:8083"))
+                .route("document-service", route -> route.path("/api/v1/documents/**").uri("http://localhost:8085"))
+                .route("dashboard-service", route -> route.path("/api/v1/dashboard/**").uri("http://localhost:8086"))
                 .build();
     }
 }

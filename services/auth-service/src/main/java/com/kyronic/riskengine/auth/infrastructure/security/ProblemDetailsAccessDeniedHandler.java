@@ -1,12 +1,16 @@
 package com.kyronic.riskengine.auth.infrastructure.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kyronic.riskengine.auth.application.service.AuditRequestFactory;
+import com.kyronic.riskengine.auth.application.service.AuditTrailService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +20,15 @@ import java.io.IOException;
 public class ProblemDetailsAccessDeniedHandler implements AccessDeniedHandler {
 
     private final ObjectMapper objectMapper;
+    private final AuditTrailService auditTrailService;
+    private final AuditRequestFactory auditRequestFactory;
 
-    public ProblemDetailsAccessDeniedHandler(ObjectMapper objectMapper) {
+    public ProblemDetailsAccessDeniedHandler(ObjectMapper objectMapper,
+                                            AuditTrailService auditTrailService,
+                                            AuditRequestFactory auditRequestFactory) {
         this.objectMapper = objectMapper;
+        this.auditTrailService = auditTrailService;
+        this.auditRequestFactory = auditRequestFactory;
     }
 
     @Override
@@ -27,6 +37,21 @@ public class ProblemDetailsAccessDeniedHandler implements AccessDeniedHandler {
         problemDetail.setTitle("Access denied");
         problemDetail.setDetail(accessDeniedException.getMessage());
         problemDetail.setProperty("errorCode", "ACCESS_DENIED");
+        problemDetail.setProperty("correlationId", auditRequestFactory.resolveCorrelationId(request));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        auditTrailService.record(auditRequestFactory.create(
+                authentication,
+                request,
+                "AUTHORIZATION_DENIED",
+                "ACCESS_DENIED",
+                "HTTP_REQUEST",
+                null,
+                null,
+                "FAILED",
+                accessDeniedException.getMessage(),
+                null,
+                null
+        ));
 
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);

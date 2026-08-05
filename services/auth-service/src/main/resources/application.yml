@@ -26,3 +26,6 @@ security:
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
+kyronic:
+  audit:
+    service-url: http://localhost:8083

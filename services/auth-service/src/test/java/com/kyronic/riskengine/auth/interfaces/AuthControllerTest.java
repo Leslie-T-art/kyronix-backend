@@ -2,6 +2,10 @@ package com.kyronic.riskengine.auth.interfaces;
 
 import com.kyronic.riskengine.auth.application.dto.LoginRequest;
 import com.kyronic.riskengine.auth.application.dto.LoginResponse;
+import com.kyronic.riskengine.auth.application.dto.AuditEventCommand;
+import com.kyronic.riskengine.auth.application.dto.AuditEventResponse;
+import com.kyronic.riskengine.auth.application.service.AuditRequestFactory;
+import com.kyronic.riskengine.auth.application.service.AuditTrailService;
 import com.kyronic.riskengine.auth.application.service.AuthTokenService;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,30 +23,50 @@ class AuthControllerTest {
 
     @Test
     void loginReturnsBearerTokenPayload() {
-        AuthController controller = new AuthController(new FakeAuthTokenService());
+        RecordingAuditTrailService auditTrailService = new RecordingAuditTrailService();
+        AuthController controller = new AuthController(new FakeAuthTokenService(), auditTrailService, requestFactory());
+        org.springframework.mock.web.MockHttpServletRequest request = new org.springframework.mock.web.MockHttpServletRequest();
+        request.setAttribute(AuditRequestFactory.CORRELATION_ID_ATTRIBUTE, "corr-1");
 
-        var response = controller.login(new LoginRequest("risk.inputter", "ChangeMe123!"));
+        var response = controller.login(new LoginRequest("risk.inputter", "ChangeMe123!"), request);
 
         assertThat(response.success()).isTrue();
         assertThat(response.data().accessToken()).isEqualTo("jwt-token");
         assertThat(response.data().tokenType()).isEqualTo("Bearer");
+        assertThat(response.correlationId()).isEqualTo("corr-1");
+        assertThat(auditTrailService.recordedEventType).isEqualTo("AUTH_LOGIN_SUCCESS");
+        assertThat(auditTrailService.recordedUsername).isEqualTo("risk.inputter");
+        assertThat(auditTrailService.recordedNewValues).doesNotContain("jwt-token");
     }
 
     @Test
     void meReturnsRolesAndPermissions() {
-        AuthController controller = new AuthController(new FakeAuthTokenService());
+        RecordingAuditTrailService auditTrailService = new RecordingAuditTrailService();
+        AuthController controller = new AuthController(new FakeAuthTokenService(), auditTrailService, requestFactory());
         var authentication = new UsernamePasswordAuthenticationToken(
                 "risk.inputter",
                 "n/a",
                 Set.of(new SimpleGrantedAuthority("ROLE_INPUTTER"), new SimpleGrantedAuthority("OLTS_CREATE"))
         );
+        org.springframework.mock.web.MockHttpServletRequest request = new org.springframework.mock.web.MockHttpServletRequest();
+        request.setAttribute(AuditRequestFactory.CORRELATION_ID_ATTRIBUTE, "corr-2");
 
-        var response = controller.me(authentication);
+        var response = controller.me(authentication, request);
 
         assertThat(response.success()).isTrue();
         assertThat(response.data().username()).isEqualTo("risk.inputter");
         assertThat(response.data().roles()).containsExactly("INPUTTER");
         assertThat(response.data().permissions()).containsExactly("OLTS_CREATE");
+        assertThat(response.correlationId()).isEqualTo("corr-2");
+        assertThat(auditTrailService.recordedEventType).isEqualTo("AUTH_PROFILE_VIEWED");
+    }
+
+    private AuditRequestFactory requestFactory() {
+        return new AuditRequestFactory(
+                com.fasterxml.jackson.databind.json.JsonMapper.builder()
+                        .findAndAddModules()
+                        .build(),
+                Clock.fixed(Instant.parse("2026-08-05T08:30:00Z"), ZoneOffset.UTC));
     }
 
     private static final class FakeAuthTokenService extends AuthTokenService {
@@ -65,6 +89,46 @@ class AuthControllerTest {
                     UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
                     Set.of("INPUTTER"),
                     Set.of("OLTS_CREATE", "OLTS_READ")
+            );
+        }
+    }
+
+    private static final class RecordingAuditTrailService extends AuditTrailService {
+        private String recordedEventType;
+        private String recordedUsername;
+        private String recordedNewValues;
+
+        private RecordingAuditTrailService() {
+            super(null);
+        }
+
+        @Override
+        public AuditEventResponse record(AuditEventCommand command) {
+            this.recordedEventType = command.eventType();
+            this.recordedUsername = command.username();
+            this.recordedNewValues = command.newValues();
+            return new AuditEventResponse(
+                    UUID.randomUUID(),
+                    command.eventType(),
+                    command.action(),
+                    "auth-service",
+                    command.entityType(),
+                    command.entityId(),
+                    command.businessReference(),
+                    command.userId(),
+                    command.username(),
+                    command.roles(),
+                    command.permissions(),
+                    command.result(),
+                    command.failureReason(),
+                    command.requestMethod(),
+                    command.requestPath(),
+                    command.sourceIp(),
+                    command.userAgent(),
+                    command.correlationId(),
+                    command.oldValues(),
+                    command.newValues(),
+                    command.occurredAt()
             );
         }
     }

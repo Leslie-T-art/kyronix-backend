@@ -1,0 +1,28 @@
+CREATE TABLE IF NOT EXISTS audit_events (
+    id UUID PRIMARY KEY,
+    event_type VARCHAR(120) NOT NULL,
+    action VARCHAR(120) NOT NULL,
+    service_name VARCHAR(120) NOT NULL,
+    entity_type VARCHAR(120) NOT NULL,
+    entity_id VARCHAR(120),
+    business_reference VARCHAR(120),
+    user_id UUID,
+    username VARCHAR(150),
+    roles VARCHAR(1000),
+    permissions VARCHAR(4000),
+    result VARCHAR(16) NOT NULL,
+    failure_reason VARCHAR(2000),
+    request_method VARCHAR(16) NOT NULL,
+    request_path VARCHAR(500) NOT NULL,
+    source_ip VARCHAR(120),
+    user_agent VARCHAR(1000),
+    correlation_id VARCHAR(120) NOT NULL,
+    old_values VARCHAR(8000),
+    new_values VARCHAR(8000),
+    occurred_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_events_occurred_at ON audit_events (occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_events_username ON audit_events (username);
+CREATE INDEX IF NOT EXISTS idx_audit_events_event_type ON audit_events (event_type);
+CREATE INDEX IF NOT EXISTS idx_audit_events_result ON audit_events (result);
