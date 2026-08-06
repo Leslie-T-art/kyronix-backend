@@ -3,6 +3,7 @@ package com.kyronic.riskengine.auth.interfaces;
 import com.kyronic.riskengine.auth.application.dto.LoginRequest;
 import com.kyronic.riskengine.auth.application.dto.LoginResponse;
 import com.kyronic.riskengine.auth.application.dto.AuthMeResponse;
+import com.kyronic.riskengine.auth.application.service.AdministrationService;
 import com.kyronic.riskengine.auth.application.service.AuditRequestFactory;
 import com.kyronic.riskengine.auth.application.service.AuditTrailService;
 import com.kyronic.riskengine.auth.application.service.AuthTokenService;
@@ -21,22 +22,22 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @RestController
 @RequestMapping("/api/v1/auth")
 @Tag(name = "Authentication", description = "Authentication and identity endpoints")
 public class AuthController {
 
     private final AuthTokenService authTokenService;
+    private final AdministrationService administrationService;
     private final AuditTrailService auditTrailService;
     private final AuditRequestFactory auditRequestFactory;
 
     public AuthController(AuthTokenService authTokenService,
+                          AdministrationService administrationService,
                           AuditTrailService auditTrailService,
                           AuditRequestFactory auditRequestFactory) {
         this.authTokenService = authTokenService;
+        this.administrationService = administrationService;
         this.auditTrailService = auditTrailService;
         this.auditRequestFactory = auditRequestFactory;
     }
@@ -52,18 +53,8 @@ public class AuthController {
     @GetMapping("/me")
     @Operation(summary = "Current user", description = "Resolve the currently authenticated principal from the bearer token.")
     public ApiResponse<AuthMeResponse> me(Authentication authentication, HttpServletRequest httpRequest) {
-        Set<String> authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
-        Set<String> roles = authorities.stream()
-                .filter(authority -> authority.startsWith("ROLE_"))
-                .map(authority -> authority.substring("ROLE_".length()))
-                .collect(Collectors.toSet());
-        Set<String> permissions = authorities.stream()
-                .filter(authority -> !authority.startsWith("ROLE_"))
-                .collect(Collectors.toSet());
         String username = authentication.getPrincipal() instanceof Jwt jwt ? jwt.getSubject() : authentication.getName();
-        AuthMeResponse response = new AuthMeResponse(username, roles, permissions);
+        AuthMeResponse response = administrationService.getCurrentUserProfile(username);
         auditTrailService.record(auditRequestFactory.create(
                 authentication,
                 httpRequest,
@@ -78,7 +69,7 @@ public class AuthController {
                 response
         ));
         return ApiResponse.success(
-                "Authenticated principal resolved",
+                "Authenticated user profile retrieved successfully",
                 response,
                 auditRequestFactory.resolveCorrelationId(httpRequest)
         );

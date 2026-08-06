@@ -4,6 +4,8 @@ import com.kyronic.riskengine.auth.application.dto.LoginRequest;
 import com.kyronic.riskengine.auth.application.dto.LoginResponse;
 import com.kyronic.riskengine.auth.application.dto.AuditEventCommand;
 import com.kyronic.riskengine.auth.application.dto.AuditEventResponse;
+import com.kyronic.riskengine.auth.application.dto.AuthMeResponse;
+import com.kyronic.riskengine.auth.application.service.AdministrationService;
 import com.kyronic.riskengine.auth.application.service.AuditRequestFactory;
 import com.kyronic.riskengine.auth.application.service.AuditTrailService;
 import com.kyronic.riskengine.auth.application.service.AuthTokenService;
@@ -24,7 +26,7 @@ class AuthControllerTest {
     @Test
     void loginReturnsBearerTokenPayload() {
         RecordingAuditTrailService auditTrailService = new RecordingAuditTrailService();
-        AuthController controller = new AuthController(new FakeAuthTokenService(), auditTrailService, requestFactory());
+        AuthController controller = new AuthController(new FakeAuthTokenService(), new FakeAdministrationService(), auditTrailService, requestFactory());
         org.springframework.mock.web.MockHttpServletRequest request = new org.springframework.mock.web.MockHttpServletRequest();
         request.setAttribute(AuditRequestFactory.CORRELATION_ID_ATTRIBUTE, "corr-1");
 
@@ -40,9 +42,9 @@ class AuthControllerTest {
     }
 
     @Test
-    void meReturnsRolesAndPermissions() {
+    void meReturnsCapturedUserProfile() {
         RecordingAuditTrailService auditTrailService = new RecordingAuditTrailService();
-        AuthController controller = new AuthController(new FakeAuthTokenService(), auditTrailService, requestFactory());
+        AuthController controller = new AuthController(new FakeAuthTokenService(), new FakeAdministrationService(), auditTrailService, requestFactory());
         var authentication = new UsernamePasswordAuthenticationToken(
                 "risk.inputter",
                 "n/a",
@@ -55,8 +57,24 @@ class AuthControllerTest {
 
         assertThat(response.success()).isTrue();
         assertThat(response.data().username()).isEqualTo("risk.inputter");
-        assertThat(response.data().roles()).containsExactly("INPUTTER");
-        assertThat(response.data().permissions()).containsExactly("OLTS_CREATE");
+        assertThat(response.data().fullName()).isEqualTo("Risk Inputter");
+        assertThat(response.data().active()).isTrue();
+        assertThat(response.data().locked()).isFalse();
+        assertThat(response.data().department()).isEqualTo(new AuthMeResponse.ReferenceAssignment(
+                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                "COM",
+                "Compliance"
+        ));
+        assertThat(response.data().branch()).isEqualTo(new AuthMeResponse.ReferenceAssignment(
+                UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                "HQ",
+                "Head Office"
+        ));
+        assertThat(response.data().roles()).containsExactlyInAnyOrder(
+                new AuthMeResponse.RoleAssignment("DEPARTMENT_HEAD", "Department Head"),
+                new AuthMeResponse.RoleAssignment("INPUTTER", "Inputter")
+        );
+        assertThat(response.data().permissions()).containsExactlyInAnyOrder("OLTS_CREATE", "OLTS_READ");
         assertThat(response.correlationId()).isEqualTo("corr-2");
         assertThat(auditTrailService.recordedEventType).isEqualTo("AUTH_PROFILE_VIEWED");
     }
@@ -67,6 +85,38 @@ class AuthControllerTest {
                         .findAndAddModules()
                         .build(),
                 Clock.fixed(Instant.parse("2026-08-05T08:30:00Z"), ZoneOffset.UTC));
+    }
+
+    private static final class FakeAdministrationService extends AdministrationService {
+        private FakeAdministrationService() {
+            super(null, null, null, null);
+        }
+
+        @Override
+        public AuthMeResponse getCurrentUserProfile(String username) {
+            return new AuthMeResponse(
+                    UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                    username,
+                    "Risk Inputter",
+                    true,
+                    false,
+                    new AuthMeResponse.ReferenceAssignment(
+                            UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            "COM",
+                            "Compliance"
+                    ),
+                    new AuthMeResponse.ReferenceAssignment(
+                            UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                            "HQ",
+                            "Head Office"
+                    ),
+                    Set.of(
+                            new AuthMeResponse.RoleAssignment("DEPARTMENT_HEAD", "Department Head"),
+                            new AuthMeResponse.RoleAssignment("INPUTTER", "Inputter")
+                    ),
+                    Set.of("OLTS_CREATE", "OLTS_READ")
+            );
+        }
     }
 
     private static final class FakeAuthTokenService extends AuthTokenService {

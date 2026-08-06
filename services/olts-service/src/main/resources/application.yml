@@ -21,5 +21,7 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
 kyronic:
+  auth:
+    service-url: http://localhost:8081
   audit:
     service-url: http://localhost:8083

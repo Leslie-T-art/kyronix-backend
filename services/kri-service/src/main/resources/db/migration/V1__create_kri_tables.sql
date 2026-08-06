@@ -1,0 +1,34 @@
+create schema if not exists kri_service;
+
+create sequence if not exists kri_service.kri_reference_seq start with 1 increment by 1;
+
+create table if not exists kri_service.kri_records (
+    id uuid primary key,
+    kri_id varchar(32) not null unique,
+    indicator_name varchar(150) not null,
+    category varchar(120) not null,
+    owner varchar(150) not null,
+    business_unit varchar(150) not null,
+    measurement_frequency varchar(80) not null,
+    description varchar(2000) not null,
+    unit_of_measure varchar(80) not null,
+    target numeric(19,4) not null,
+    direction varchar(30) not null,
+    green_upper_bound numeric(19,4) not null,
+    amber_threshold numeric(19,4) not null,
+    red_threshold numeric(19,4) not null,
+    current_value numeric(19,4) not null,
+    data_source varchar(255) not null,
+    next_review_date date not null,
+    linked_risk varchar(120) not null,
+    escalate_to varchar(150) not null,
+    escalation_trigger varchar(500) not null,
+    created_at timestamp with time zone not null,
+    created_by varchar(120) not null,
+    updated_at timestamp with time zone not null,
+    updated_by varchar(120) not null,
+    deleted boolean not null default false,
+    version bigint
+);
+
+create index if not exists idx_kri_records_active on kri_service.kri_records (deleted, created_at desc);

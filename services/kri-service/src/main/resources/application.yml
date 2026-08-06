@@ -3,11 +3,32 @@ server:
 spring:
   application:
     name: kri-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/kyronic_platform
+    username: kyronic
+    password: kyronic
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: kri_service
+  flyway:
+    enabled: true
+    default-schema: kri_service
+    schemas: kri_service
+    table: kri_service_schema_history
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+security:
+  jwt:
+    secret: kyronic-local-jwt-signing-secret-2026
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
 kyronic:
   audit:
     service-url: http://localhost:8083

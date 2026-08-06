@@ -1,7 +1,5 @@
 package com.kyronic.riskengine.olts.application.dto;
 
-import com.kyronic.riskengine.olts.domain.model.EventType;
-import com.kyronic.riskengine.olts.domain.model.LossCategory;
 import com.kyronic.riskengine.olts.domain.model.Severity;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
@@ -18,8 +16,8 @@ public record UpdateIncidentRequest(
         @NotNull LocalDate discoveryDate,
         @NotNull UUID branchId,
         @NotNull UUID departmentId,
-        @NotNull LossCategory lossCategory,
-        @NotNull EventType eventType,
+        @NotBlank String lossCategory,
+        @NotBlank String eventType,
         @NotNull Severity severity,
         @NotBlank String description,
         @NotBlank @Size(min = 3, max = 3) @Pattern(regexp = "^[A-Z]{3}$") String currencyCode,

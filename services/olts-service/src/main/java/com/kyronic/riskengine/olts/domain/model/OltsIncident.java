@@ -21,8 +21,8 @@ public class OltsIncident {
     private final UUID inputterUserId;
     private final LocalDate incidentDate;
     private final LocalDate discoveryDate;
-    private final LossCategory lossCategory;
-    private final EventType eventType;
+    private final String lossCategory;
+    private final String eventType;
     private final Severity severity;
     private final String description;
     private final String currencyCode;
@@ -49,8 +49,8 @@ public class OltsIncident {
     private Instant deletedAt;
 
     private OltsIncident(UUID id, String incidentId, UUID departmentId, UUID branchId, UUID inputterUserId,
-                         LocalDate incidentDate, LocalDate discoveryDate, LossCategory lossCategory,
-                         EventType eventType, Severity severity, String description, String currencyCode,
+                         LocalDate incidentDate, LocalDate discoveryDate, String lossCategory,
+                         String eventType, Severity severity, String description, String currencyCode,
                          BigDecimal grossLoss, BigDecimal recoveries, BigDecimal potentialLoss,
                          UUID responsiblePersonId, String responsiblePersonName, Integer recordVersion,
                          boolean activeVersion, Instant createdAt, UUID createdBy) {
@@ -84,8 +84,8 @@ public class OltsIncident {
     }
 
     public static OltsIncident create(String incidentId, UUID departmentId, UUID branchId, UUID inputterUserId,
-                                      LocalDate incidentDate, LocalDate discoveryDate, LossCategory lossCategory,
-                                      EventType eventType, Severity severity, String description, String currencyCode,
+                                      LocalDate incidentDate, LocalDate discoveryDate, String lossCategory,
+                                      String eventType, Severity severity, String description, String currencyCode,
                                       BigDecimal grossLoss, BigDecimal recoveries, BigDecimal potentialLoss,
                                       UUID responsiblePersonId, String responsiblePersonName, Instant now) {
         validateDates(incidentDate, discoveryDate);
@@ -165,8 +165,8 @@ public class OltsIncident {
                             UUID branchId,
                             LocalDate incidentDate,
                             LocalDate discoveryDate,
-                            LossCategory lossCategory,
-                            EventType eventType,
+                            String lossCategory,
+                            String eventType,
                             Severity severity,
                             String description,
                             String currencyCode,
@@ -214,8 +214,8 @@ public class OltsIncident {
                                          UUID inputterUserId,
                                          LocalDate incidentDate,
                                          LocalDate discoveryDate,
-                                         LossCategory lossCategory,
-                                         EventType eventType,
+                                         String lossCategory,
+                                         String eventType,
                                          Severity severity,
                                          String description,
                                          String currencyCode,
@@ -318,11 +318,11 @@ public class OltsIncident {
         return discoveryDate;
     }
 
-    public LossCategory getLossCategory() {
+    public String getLossCategory() {
         return lossCategory;
     }
 
-    public EventType getEventType() {
+    public String getEventType() {
         return eventType;
     }
 
@@ -426,8 +426,8 @@ public class OltsIncident {
                                   UUID branchId,
                                   LocalDate incidentDate,
                                   LocalDate discoveryDate,
-                                  LossCategory lossCategory,
-                                  EventType eventType,
+                                  String lossCategory,
+                                  String eventType,
                                   Severity severity,
                                   String description,
                                   String currencyCode,

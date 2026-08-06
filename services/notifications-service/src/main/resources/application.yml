@@ -3,11 +3,34 @@ server:
 spring:
   application:
     name: notifications-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/kyronic_platform
+    username: kyronic
+    password: kyronic
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: notifications_service
+  flyway:
+    enabled: true
+    default-schema: notifications_service
+    schemas: notifications_service
+    table: notifications_service_schema_history
+  kafka:
+    bootstrap-servers: localhost:9092
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,prometheus
+security:
+  jwt:
+    secret: kyronic-local-jwt-signing-secret-2026
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
 kyronic:
   audit:
     service-url: http://localhost:8083

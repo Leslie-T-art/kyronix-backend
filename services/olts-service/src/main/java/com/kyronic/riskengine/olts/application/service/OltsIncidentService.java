@@ -25,6 +25,7 @@ public class OltsIncidentService {
     private final SegregationOfDutiesPolicy segregationOfDutiesPolicy;
     private final AuthorizationDirectory authorizationDirectory;
     private final EventPublisher eventPublisher;
+    private final LossCategoryCatalog lossCategoryCatalog;
     private final Clock clock;
 
     public OltsIncidentService(IncidentIdGenerator incidentIdGenerator,
@@ -33,6 +34,7 @@ public class OltsIncidentService {
                                SegregationOfDutiesPolicy segregationOfDutiesPolicy,
                                AuthorizationDirectory authorizationDirectory,
                                EventPublisher eventPublisher,
+                               LossCategoryCatalog lossCategoryCatalog,
                                Clock clock) {
         this.incidentIdGenerator = incidentIdGenerator;
         this.incidentStore = incidentStore;
@@ -40,6 +42,7 @@ public class OltsIncidentService {
         this.segregationOfDutiesPolicy = segregationOfDutiesPolicy;
         this.authorizationDirectory = authorizationDirectory;
         this.eventPublisher = eventPublisher;
+        this.lossCategoryCatalog = lossCategoryCatalog;
         this.clock = clock;
     }
 
@@ -51,8 +54,8 @@ public class OltsIncidentService {
                 inputterUserId,
                 request.incidentDate(),
                 request.discoveryDate(),
-                request.lossCategory(),
-                request.eventType(),
+                lossCategoryCatalog.requireValidCode(request.lossCategory()),
+                normalizeCode(request.eventType(), "event type"),
                 request.severity(),
                 request.description(),
                 request.currencyCode(),
@@ -83,8 +86,8 @@ public class OltsIncidentService {
                 request.branchId(),
                 request.incidentDate(),
                 request.discoveryDate(),
-                request.lossCategory(),
-                request.eventType(),
+                lossCategoryCatalog.requireValidCode(request.lossCategory()),
+                normalizeCode(request.eventType(), "event type"),
                 request.severity(),
                 request.description(),
                 request.currencyCode(),
@@ -113,8 +116,9 @@ public class OltsIncidentService {
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.submit(actorUserId, Instant.now(clock));
         incidentStore.save(incident);
-        resolveAuthorizer(incident);
-        eventPublisher.publish(event("olts.incident.submitted.v1", incident, correlationId, actorUserId, null));
+        AuthorizerCandidate authorizer = resolveAuthorizer(incident);
+        eventPublisher.publish(event("authorization.requested.v1", incident, correlationId, actorUserId, authorizer.userId()));
+        eventPublisher.publish(event("olts.incident.submitted.v1", incident, correlationId, actorUserId, authorizer.userId()));
         return incident;
     }
 
@@ -132,6 +136,7 @@ public class OltsIncidentService {
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.authorize(actorUserId, Instant.now(clock), segregationOfDutiesPolicy);
         incidentStore.save(incident);
+        eventPublisher.publish(event("authorization.approved.v1", incident, correlationId, incident.getInputterUserId(), actorUserId));
         eventPublisher.publish(event("olts.incident.authorized.v1", incident, correlationId, incident.getInputterUserId(), actorUserId));
         return incident;
     }
@@ -156,6 +161,13 @@ public class OltsIncidentService {
 
     public Optional<OltsIncident> getByIncidentId(String incidentId) {
         return incidentStore.findByIncidentId(incidentId);
+    }
+
+    private String normalizeCode(String code, String fieldName) {
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " is required");
+        }
+        return code.trim().toUpperCase();
     }
 
     private AuthorizerCandidate resolveAuthorizer(OltsIncident incident) {

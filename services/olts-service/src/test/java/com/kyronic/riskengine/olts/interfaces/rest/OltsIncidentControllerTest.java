@@ -4,10 +4,10 @@ import com.kyronic.riskengine.common.authorization.AuthorizerCandidate;
 import com.kyronic.riskengine.common.api.ApiResponse;
 import com.kyronic.riskengine.olts.application.dto.CreateIncidentRequest;
 import com.kyronic.riskengine.olts.application.dto.IncidentResponse;
+import com.kyronic.riskengine.olts.application.dto.ReferenceDataOptionResponse;
 import com.kyronic.riskengine.olts.application.mapper.IncidentMapperImpl;
+import com.kyronic.riskengine.olts.application.service.AuthReferenceDataGateway;
 import com.kyronic.riskengine.olts.application.service.OltsIncidentService;
-import com.kyronic.riskengine.olts.domain.model.EventType;
-import com.kyronic.riskengine.olts.domain.model.LossCategory;
 import com.kyronic.riskengine.olts.domain.model.Severity;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -29,6 +29,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class OltsIncidentControllerTest {
 
+    private static final UUID OPERATIONS_DEPARTMENT_ID = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+    private static final UUID HEAD_OFFICE_BRANCH_ID = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+
     private OltsIncidentController controller;
     private Jwt jwt;
     private Validator validator;
@@ -44,6 +47,7 @@ class OltsIncidentControllerTest {
                 (departmentId, permission) -> List.of(new AuthorizerCandidate(UUID.randomUUID(), departmentId, Set.of(permission), true, false, null, null, null)),
                 event -> {
                 },
+                code -> code,
                 Clock.fixed(Instant.parse("2026-08-05T08:00:00Z"), ZoneOffset.UTC)
         );
         jwt = Jwt.withTokenValue("token")
@@ -52,19 +56,18 @@ class OltsIncidentControllerTest {
                 .header("alg", "HS256")
                 .build();
         validator = Validation.buildDefaultValidatorFactory().getValidator();
-        controller = new OltsIncidentController(service, new IncidentMapperImpl());
+        controller = new OltsIncidentController(service, new IncidentMapperImpl(), new StubAuthReferenceDataGateway());
     }
 
     @Test
     void createsIncident() {
-        UUID departmentId = UUID.randomUUID();
         CreateIncidentRequest request = new CreateIncidentRequest(
                 LocalDate.of(2026, 8, 1),
                 LocalDate.of(2026, 8, 2),
-                UUID.randomUUID(),
-                departmentId,
-                LossCategory.INTERNAL_FRAUD,
-                EventType.INCIDENT,
+                HEAD_OFFICE_BRANCH_ID,
+                OPERATIONS_DEPARTMENT_ID,
+                "INTERNAL_FRAUD",
+                "INCIDENT",
                 Severity.HIGH,
                 "System outage detected by branch operations",
                 "USD",
@@ -80,19 +83,20 @@ class OltsIncidentControllerTest {
         assertThat(response.data().inputterUserId()).isEqualTo(UUID.fromString("11111111-1111-1111-1111-111111111111"));
         assertThat(response.data().responsiblePersonId()).isEqualTo(UUID.fromString("11111111-1111-1111-1111-111111111111"));
         assertThat(response.data().responsiblePersonName()).isEqualTo("risk.inputter");
+        assertThat(response.data().departmentName()).isEqualTo("Operations");
+        assertThat(response.data().branchName()).isEqualTo("Head Office");
         assertThat(response.data().netLoss()).isEqualByComparingTo("90.00");
     }
 
     @Test
     void listsIncidents() {
-        UUID departmentId = UUID.randomUUID();
         CreateIncidentRequest request = new CreateIncidentRequest(
                 LocalDate.of(2026, 8, 1),
                 LocalDate.of(2026, 8, 2),
-                UUID.randomUUID(),
-                departmentId,
-                LossCategory.INTERNAL_FRAUD,
-                EventType.INCIDENT,
+                HEAD_OFFICE_BRANCH_ID,
+                OPERATIONS_DEPARTMENT_ID,
+                "INTERNAL_FRAUD",
+                "INCIDENT",
                 Severity.HIGH,
                 "System outage detected by branch operations",
                 "USD",
@@ -103,10 +107,12 @@ class OltsIncidentControllerTest {
 
         controller.create(request, jwt);
 
-        ApiResponse<List<IncidentResponse>> response = controller.list();
+        ApiResponse<List<IncidentResponse>> response = controller.list(jwt);
 
         assertThat(response.success()).isTrue();
         assertThat(response.data()).hasSize(1);
+        assertThat(response.data().get(0).departmentName()).isEqualTo("Operations");
+        assertThat(response.data().get(0).branchName()).isEqualTo("Head Office");
     }
 
     @Test
@@ -116,8 +122,8 @@ class OltsIncidentControllerTest {
                 LocalDate.of(2026, 8, 2),
                 UUID.randomUUID(),
                 UUID.randomUUID(),
-                LossCategory.INTERNAL_FRAUD,
-                EventType.INCIDENT,
+                "INTERNAL_FRAUD",
+                "INCIDENT",
                 Severity.HIGH,
                 "System outage detected by branch operations",
                 "string",
@@ -146,6 +152,33 @@ class OltsIncidentControllerTest {
         @Override
         public List<com.kyronic.riskengine.olts.domain.model.OltsIncident> findAllActive() {
             return incident == null || incident.isDeleted() ? List.of() : List.of(incident);
+        }
+    }
+
+    private static final class StubAuthReferenceDataGateway extends AuthReferenceDataGateway {
+
+        private StubAuthReferenceDataGateway() {
+            super(org.springframework.web.client.RestClient.builder());
+        }
+
+        @Override
+        public List<ReferenceDataOptionResponse> listDepartments(String authorizationHeader) {
+            return List.of(new ReferenceDataOptionResponse(
+                    OPERATIONS_DEPARTMENT_ID,
+                    "OPS",
+                    "Operations",
+                    true
+            ));
+        }
+
+        @Override
+        public List<ReferenceDataOptionResponse> listBranches(String authorizationHeader) {
+            return List.of(new ReferenceDataOptionResponse(
+                    HEAD_OFFICE_BRANCH_ID,
+                    "HQ",
+                    "Head Office",
+                    true
+            ));
         }
     }
 }

@@ -142,7 +142,7 @@ public class AdministrationController {
 
     @GetMapping("/departments")
     @Operation(summary = "List departments")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA') or hasRole('DEPARTMENT_HEAD') or hasRole('INPUTTER')")
     public ApiResponse<List<ReferenceDataResponse>> listDepartments(Authentication authentication, HttpServletRequest request) {
         List<ReferenceDataResponse> response = administrationService.listReferenceData(ReferenceDataType.DEPARTMENT);
         auditTrailService.record(auditRequestFactory.create(authentication, request, "ADMIN_DEPARTMENTS_VIEWED", "LIST_DEPARTMENTS", "REFERENCE_DATA", null, "DEPARTMENT", "SUCCESS", null, null, response));
@@ -188,7 +188,7 @@ public class AdministrationController {
 
     @GetMapping("/branches")
     @Operation(summary = "List branches")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA') or hasRole('DEPARTMENT_HEAD') or hasRole('INPUTTER')")
     public ApiResponse<List<ReferenceDataResponse>> listBranches(Authentication authentication, HttpServletRequest request) {
         List<ReferenceDataResponse> response = administrationService.listReferenceData(ReferenceDataType.BRANCH);
         auditTrailService.record(auditRequestFactory.create(authentication, request, "ADMIN_BRANCHES_VIEWED", "LIST_BRANCHES", "REFERENCE_DATA", null, "BRANCH", "SUCCESS", null, null, response));
@@ -234,7 +234,7 @@ public class AdministrationController {
 
     @GetMapping("/loss-categories")
     @Operation(summary = "List loss categories")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA') or hasRole('DEPARTMENT_HEAD') or hasRole('INPUTTER')")
     public ApiResponse<List<ReferenceDataResponse>> listLossCategories(Authentication authentication, HttpServletRequest request) {
         List<ReferenceDataResponse> response = administrationService.listReferenceData(ReferenceDataType.LOSS_CATEGORY);
         auditTrailService.record(auditRequestFactory.create(authentication, request, "ADMIN_LOSS_CATEGORIES_VIEWED", "LIST_LOSS_CATEGORIES", "REFERENCE_DATA", null, "LOSS_CATEGORY", "SUCCESS", null, null, response));
@@ -280,7 +280,7 @@ public class AdministrationController {
 
     @GetMapping("/event-types")
     @Operation(summary = "List event types")
-    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
+    @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA') or hasRole('DEPARTMENT_HEAD') or hasRole('INPUTTER')")
     public ApiResponse<List<ReferenceDataResponse>> listEventTypes(Authentication authentication, HttpServletRequest request) {
         List<ReferenceDataResponse> response = administrationService.listReferenceData(ReferenceDataType.EVENT_TYPE);
         auditTrailService.record(auditRequestFactory.create(authentication, request, "ADMIN_EVENT_TYPES_VIEWED", "LIST_EVENT_TYPES", "REFERENCE_DATA", null, "EVENT_TYPE", "SUCCESS", null, null, response));

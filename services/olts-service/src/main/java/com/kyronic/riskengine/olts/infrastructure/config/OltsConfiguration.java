@@ -5,6 +5,7 @@ import com.kyronic.riskengine.common.authorization.ServerSideAuthorizerResolver;
 import com.kyronic.riskengine.olts.application.service.AuthorizationDirectory;
 import com.kyronic.riskengine.olts.application.service.EventPublisher;
 import com.kyronic.riskengine.olts.application.service.IncidentIdGenerator;
+import com.kyronic.riskengine.olts.application.service.LossCategoryCatalog;
 import com.kyronic.riskengine.olts.application.service.OltsIncidentService;
 import com.kyronic.riskengine.olts.application.service.OltsIncidentStore;
 import org.springframework.context.annotation.Bean;
@@ -19,7 +20,8 @@ public class OltsConfiguration {
     OltsIncidentService oltsIncidentService(IncidentIdGenerator incidentIdGenerator,
                                             OltsIncidentStore incidentStore,
                                             AuthorizationDirectory authorizationDirectory,
-                                            EventPublisher eventPublisher) {
+                                            EventPublisher eventPublisher,
+                                            LossCategoryCatalog lossCategoryCatalog) {
         return new OltsIncidentService(
                 incidentIdGenerator,
                 incidentStore,
@@ -27,6 +29,7 @@ public class OltsConfiguration {
                 new SegregationOfDutiesPolicy(),
                 authorizationDirectory,
                 eventPublisher,
+                lossCategoryCatalog,
                 Clock.systemUTC()
         );
     }

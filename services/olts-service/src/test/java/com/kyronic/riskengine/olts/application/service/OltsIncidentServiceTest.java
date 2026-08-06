@@ -7,8 +7,6 @@ import com.kyronic.riskengine.common.authorization.ServerSideAuthorizerResolver;
 import com.kyronic.riskengine.common.events.EventEnvelope;
 import com.kyronic.riskengine.olts.application.dto.CreateIncidentRequest;
 import com.kyronic.riskengine.olts.application.dto.UpdateIncidentRequest;
-import com.kyronic.riskengine.olts.domain.model.EventType;
-import com.kyronic.riskengine.olts.domain.model.LossCategory;
 import com.kyronic.riskengine.olts.domain.model.OltsIncident;
 import com.kyronic.riskengine.olts.domain.model.Severity;
 import org.junit.jupiter.api.Test;
@@ -51,6 +49,7 @@ class OltsIncidentServiceTest {
                         null
                 )),
                 publisher,
+                code -> code,
                 Clock.fixed(Instant.parse("2026-08-05T08:00:00Z"), ZoneOffset.UTC)
         );
 
@@ -76,6 +75,7 @@ class OltsIncidentServiceTest {
                 new SegregationOfDutiesPolicy(),
                 (ignoredDepartmentId, ignoredPermission) -> List.of(),
                 publisher,
+                code -> code,
                 Clock.fixed(Instant.parse("2026-08-05T08:00:00Z"), ZoneOffset.UTC)
         );
 
@@ -95,8 +95,8 @@ class OltsIncidentServiceTest {
                 LocalDate.of(2026, 8, 2),
                 UUID.randomUUID(),
                 departmentId,
-                LossCategory.INTERNAL_FRAUD,
-                EventType.INCIDENT,
+                "INTERNAL_FRAUD",
+                "INCIDENT",
                 Severity.HIGH,
                 "ATM outage caused unreconciled postings",
                 "USD",
@@ -112,8 +112,8 @@ class OltsIncidentServiceTest {
                 LocalDate.of(2026, 8, 2),
                 UUID.randomUUID(),
                 departmentId,
-                LossCategory.PROCESS_FAILURE,
-                EventType.OPERATIONAL_LOSS,
+                "PROCESS_FAILURE",
+                "OPERATIONAL_LOSS",
                 Severity.MEDIUM,
                 "Updated narrative",
                 "USD",

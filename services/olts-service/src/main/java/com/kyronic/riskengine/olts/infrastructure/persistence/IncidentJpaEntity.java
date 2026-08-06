@@ -1,9 +1,7 @@
 package com.kyronic.riskengine.olts.infrastructure.persistence;
 
 import com.kyronic.riskengine.common.authorization.AuthorizationStatus;
-import com.kyronic.riskengine.olts.domain.model.EventType;
 import com.kyronic.riskengine.olts.domain.model.IncidentStatus;
-import com.kyronic.riskengine.olts.domain.model.LossCategory;
 import com.kyronic.riskengine.olts.domain.model.Severity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,10 +33,10 @@ public class IncidentJpaEntity {
     private LocalDate incidentDate;
     @Column(nullable = false)
     private LocalDate discoveryDate;
-    @Enumerated(EnumType.STRING)
-    private LossCategory lossCategory;
-    @Enumerated(EnumType.STRING)
-    private EventType eventType;
+    @Column(nullable = false, length = 50)
+    private String lossCategory;
+    @Column(nullable = false, length = 50)
+    private String eventType;
     @Enumerated(EnumType.STRING)
     private Severity severity;
     @Column(nullable = false, length = 4000)

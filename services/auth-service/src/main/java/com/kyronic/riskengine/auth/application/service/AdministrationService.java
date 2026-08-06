@@ -1,5 +1,7 @@
 package com.kyronic.riskengine.auth.application.service;
 
+import com.kyronic.riskengine.auth.application.dto.AuthMeResponse;
+import com.kyronic.riskengine.auth.application.dto.AuthorizerCandidateResponse;
 import com.kyronic.riskengine.auth.application.dto.ReferenceDataRequest;
 import com.kyronic.riskengine.auth.application.dto.ReferenceDataResponse;
 import com.kyronic.riskengine.auth.application.dto.RoleDefinitionRequest;
@@ -17,9 +19,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -51,6 +58,47 @@ public class AdministrationService {
     public UserResponse getUser(UUID id) {
         return toUserResponse(userAccountRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("user not found")));
+    }
+
+    @Transactional(readOnly = true)
+    public AuthMeResponse getCurrentUserProfile(String username) {
+        UserAccount account = userAccountRepository.findByUsername(username)
+                .filter(user -> !user.isDeleted())
+                .orElseThrow(() -> new IllegalArgumentException("user not found"));
+
+        Map<UUID, ReferenceDataEntry> referenceDataById = referenceDataEntryRepository.findAllById(
+                        List.of(account.getDepartmentId(), account.getBranchId()).stream()
+                                .filter(java.util.Objects::nonNull)
+                                .toList())
+                .stream()
+                .collect(Collectors.toMap(ReferenceDataEntry::getId, Function.identity()));
+
+        Map<String, RoleDefinition> rolesByCode = roleDefinitionRepository.findByCodeIn(account.getRoles())
+                .stream()
+                .collect(Collectors.toMap(RoleDefinition::getCode, Function.identity()));
+
+        return new AuthMeResponse(
+                account.getId(),
+                account.getUsername(),
+                account.getFullName(),
+                account.isActive(),
+                account.isLocked(),
+                toReferenceAssignment(referenceDataById.get(account.getDepartmentId())),
+                toReferenceAssignment(referenceDataById.get(account.getBranchId())),
+                account.getRoles().stream()
+                        .sorted()
+                        .map(roleCode -> {
+                            RoleDefinition role = rolesByCode.get(roleCode);
+                            return new AuthMeResponse.RoleAssignment(
+                                    roleCode,
+                                    role != null ? role.getName() : roleCode
+                            );
+                        })
+                        .collect(Collectors.toCollection(java.util.LinkedHashSet::new)),
+                account.getPermissions().stream()
+                        .sorted()
+                        .collect(Collectors.toCollection(java.util.LinkedHashSet::new))
+        );
     }
 
     public UserResponse createUser(UserUpsertRequest request) {
@@ -146,6 +194,24 @@ public class AdministrationService {
         referenceDataEntryRepository.deleteById(id);
     }
 
+    @Transactional(readOnly = true)
+    public List<AuthorizerCandidateResponse> listEligibleAuthorizers(UUID departmentId, String permission) {
+        return userAccountRepository.findByDepartmentIdAndActiveTrueAndDeletedFalse(departmentId).stream()
+                .filter(account -> !account.isLocked())
+                .filter(account -> account.getPermissions().contains(permission))
+                .filter(account -> account.getRoles().contains("DEPARTMENT_HEAD") || account.getRoles().contains("AUTHORIZER"))
+                .sorted(Comparator.comparing(UserAccount::getUsername, String.CASE_INSENSITIVE_ORDER))
+                .map(account -> new AuthorizerCandidateResponse(
+                        account.getId(),
+                        account.getDepartmentId(),
+                        Set.copyOf(account.getPermissions()),
+                        account.isActive(),
+                        false
+                ))
+                .filter(candidate -> Objects.nonNull(candidate.userId()))
+                .toList();
+    }
+
     private UserResponse toUserResponse(UserAccount account) {
         return new UserResponse(
                 account.getId(),
@@ -172,5 +238,12 @@ public class AdministrationService {
 
     private ReferenceDataResponse toReferenceResponse(ReferenceDataEntry entry) {
         return new ReferenceDataResponse(entry.getId(), entry.getCode(), entry.getName(), entry.isActive());
+    }
+
+    private AuthMeResponse.ReferenceAssignment toReferenceAssignment(ReferenceDataEntry entry) {
+        if (entry == null) {
+            return null;
+        }
+        return new AuthMeResponse.ReferenceAssignment(entry.getId(), entry.getCode(), entry.getName());
     }
 }
