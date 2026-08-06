@@ -1,0 +1,11 @@
+audit-service|33674|8083
+auth-service|33709|8081
+olts-service|33744|8082
+notifications-service|33773|8084
+document-service|33810|8085
+dashboard-service|33842|8086
+kri-service|33880|8087
+risk-register-service|33917|8088
+process-flows-service|33946|8089
+self-assessment-service|33983|8090
+api-gateway|34015|8080

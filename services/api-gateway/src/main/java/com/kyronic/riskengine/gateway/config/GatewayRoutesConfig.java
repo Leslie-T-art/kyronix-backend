@@ -16,6 +16,8 @@ public class GatewayRoutesConfig {
                 .route("audit-service", route -> route.path("/api/v1/audit/**").uri("http://localhost:8083"))
                 .route("document-service", route -> route.path("/api/v1/documents/**").uri("http://localhost:8085"))
                 .route("dashboard-service", route -> route.path("/api/v1/dashboard/**").uri("http://localhost:8086"))
+                .route("kri-service", route -> route.path("/api/v1/kri/**").uri("http://localhost:8087"))
+                .route("risk-register-service", route -> route.path("/api/v1/risk-register/**").uri("http://localhost:8088"))
                 .build();
     }
 }
