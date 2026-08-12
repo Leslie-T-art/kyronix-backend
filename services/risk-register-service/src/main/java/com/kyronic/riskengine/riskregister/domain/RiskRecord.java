@@ -2,20 +2,22 @@ package com.kyronic.riskengine.riskregister.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Table(name = "risk_records")
 public class RiskRecord {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, unique = true, length = 32)
     private String riskId;
@@ -83,16 +85,13 @@ public class RiskRecord {
     @Column(nullable = false, length = 120)
     private String updatedBy;
 
-    @Column(nullable = false)
-    private boolean deleted;
-
     @Version
     private Long version;
 
     protected RiskRecord() {
     }
 
-    public RiskRecord(UUID id,
+    public RiskRecord(Long id,
                       String riskId,
                       String riskTitle,
                       String category,
@@ -115,7 +114,6 @@ public class RiskRecord {
                       String createdBy,
                       Instant updatedAt,
                       String updatedBy,
-                      boolean deleted,
                       Long version) {
         this.id = id;
         this.riskId = riskId;
@@ -140,7 +138,6 @@ public class RiskRecord {
         this.createdBy = createdBy;
         this.updatedAt = updatedAt;
         this.updatedBy = updatedBy;
-        this.deleted = deleted;
         this.version = version;
     }
 
@@ -184,13 +181,7 @@ public class RiskRecord {
         this.updatedBy = updatedBy;
     }
 
-    public void markDeleted(Instant updatedAt, String updatedBy) {
-        this.deleted = true;
-        this.updatedAt = updatedAt;
-        this.updatedBy = updatedBy;
-    }
-
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
@@ -282,7 +273,4 @@ public class RiskRecord {
         return updatedBy;
     }
 
-    public boolean isDeleted() {
-        return deleted;
-    }
 }

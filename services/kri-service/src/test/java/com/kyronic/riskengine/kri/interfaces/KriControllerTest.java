@@ -9,7 +9,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -74,7 +73,7 @@ class KriControllerTest {
 
     private KriResponse response() {
         return new KriResponse(
-                UUID.randomUUID(),
+                1L,
                 "KRI-2026-00001",
                 "Loan Default Ratio",
                 "Credit",

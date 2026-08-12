@@ -10,7 +10,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,14 +42,14 @@ class AuditTrailControllerTest {
         @Override
         public List<AuditEventResponse> findAuditEvents() {
             return List.of(new AuditEventResponse(
-                    UUID.randomUUID(),
+                    1L,
                     "AUTH_LOGIN_SUCCESS",
                     "LOGIN",
                     "auth-service",
                     "AUTH_SESSION",
                     null,
                     null,
-                    UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                    111111L,
                     "risk.inputter",
                     "INPUTTER",
                     "OLTS_CREATE",

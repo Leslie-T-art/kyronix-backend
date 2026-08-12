@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -30,8 +29,8 @@ class OltsIncidentServiceTest {
     void submitResolvesAuthorizerAndPublishesEvent() {
         InMemoryStore store = new InMemoryStore();
         CapturingPublisher publisher = new CapturingPublisher();
-        UUID departmentId = UUID.randomUUID();
-        UUID maker = UUID.randomUUID();
+        Long departmentId = 101L;
+        Long maker = 1001L;
 
         OltsIncidentService service = new OltsIncidentService(
                 () -> "OLTS-2026-00001",
@@ -39,7 +38,7 @@ class OltsIncidentServiceTest {
                 new ServerSideAuthorizerResolver(),
                 new SegregationOfDutiesPolicy(),
                 (ignoredDepartmentId, ignoredPermission) -> List.of(new AuthorizerCandidate(
-                        UUID.randomUUID(),
+                        1002L,
                         departmentId,
                         Set.of("OLTS_AUTHORIZE"),
                         true,
@@ -65,8 +64,8 @@ class OltsIncidentServiceTest {
     void updateAndDeleteWorkForDraftIncident() {
         InMemoryStore store = new InMemoryStore();
         CapturingPublisher publisher = new CapturingPublisher();
-        UUID departmentId = UUID.randomUUID();
-        UUID maker = UUID.randomUUID();
+        Long departmentId = 101L;
+        Long maker = 1001L;
 
         OltsIncidentService service = new OltsIncidentService(
                 () -> "OLTS-2026-00001",
@@ -83,43 +82,85 @@ class OltsIncidentServiceTest {
         OltsIncident updated = service.update("OLTS-2026-00001", updateRequest(departmentId), maker, "maker", "corr-2");
         service.delete("OLTS-2026-00001", maker, "corr-3");
 
-        assertThat(updated.getDescription()).isEqualTo("Updated narrative");
+        assertThat(updated.getEventDescription()).isEqualTo("Updated narrative");
         assertThat(service.listAll()).isEmpty();
         assertThat(publisher.events).extracting(EventEnvelope::eventType)
                 .contains("olts.incident.updated.v1", "olts.incident.deleted.v1");
     }
 
-    private CreateIncidentRequest request(UUID departmentId) {
+    private CreateIncidentRequest request(Long departmentId) {
         return new CreateIncidentRequest(
+                "ATM Switch Failure",
+                11L,
                 LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 8, 3),
                 LocalDate.of(2026, 8, 2),
-                UUID.randomUUID(),
+                201L,
                 departmentId,
-                "INTERNAL_FRAUD",
-                "INCIDENT",
-                Severity.HIGH,
+                "Payments",
+                "ATM Services",
+                21L,
                 "ATM outage caused unreconciled postings",
-                "USD",
+                "Channel switched to manual routing",
+                31L,
+                "Batch handoff failure",
+                41L,
+                true,
+                51L,
                 new BigDecimal("100.00"),
                 new BigDecimal("5.00"),
-                new BigDecimal("25.00")
+                61L,
+                "GL-001",
+                71L,
+                "Service outage",
+                "Branch customers were delayed",
+                Severity.HIGH,
+                "Implement failover",
+                "Head of Operations",
+                LocalDate.of(2026, 8, 15),
+                81L,
+                true,
+                "validation-pack.pdf",
+                LocalDate.of(2026, 8, 20),
+                "Closure pending review"
         );
     }
 
-    private UpdateIncidentRequest updateRequest(UUID departmentId) {
+    private UpdateIncidentRequest updateRequest(Long departmentId) {
         return new UpdateIncidentRequest(
+                "ATM Switch Failure",
+                12L,
                 LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 8, 4),
                 LocalDate.of(2026, 8, 2),
-                UUID.randomUUID(),
+                201L,
                 departmentId,
-                "PROCESS_FAILURE",
-                "OPERATIONAL_LOSS",
-                Severity.MEDIUM,
+                "Payments",
+                "ATM Services",
+                22L,
                 "Updated narrative",
-                "USD",
+                "Manual monitoring introduced",
+                32L,
+                "Updated root cause",
+                42L,
+                true,
+                52L,
                 new BigDecimal("250.00"),
                 new BigDecimal("50.00"),
-                new BigDecimal("75.00")
+                62L,
+                "GL-002",
+                72L,
+                "Customer impact",
+                "Updated details",
+                Severity.MEDIUM,
+                "Updated corrective action",
+                "Treasury Director",
+                LocalDate.of(2026, 9, 15),
+                82L,
+                true,
+                "evidence.zip",
+                LocalDate.of(2026, 9, 20),
+                "Updated closure comment"
         );
     }
 
@@ -138,8 +179,13 @@ class OltsIncidentServiceTest {
         }
 
         @Override
-        public List<OltsIncident> findAllActive() {
-            return incident == null || incident.isDeleted() ? List.of() : List.of(incident);
+        public List<OltsIncident> findAll() {
+            return incident == null ? List.of() : List.of(incident);
+        }
+
+        @Override
+        public void delete(OltsIncident incident) {
+            this.incident = null;
         }
     }
 

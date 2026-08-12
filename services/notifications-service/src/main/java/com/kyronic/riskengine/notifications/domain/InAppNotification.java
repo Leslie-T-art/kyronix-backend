@@ -22,7 +22,7 @@ public class InAppNotification {
     private String notificationReference;
 
     @Column(nullable = false)
-    private UUID recipientUserId;
+    private Long recipientUserId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
@@ -93,7 +93,7 @@ public class InAppNotification {
 
     public InAppNotification(UUID id,
                              String notificationReference,
-                             UUID recipientUserId,
+                             Long recipientUserId,
                              NotificationType type,
                              NotificationPriority priority,
                              String title,
@@ -147,7 +147,7 @@ public class InAppNotification {
         return notificationReference;
     }
 
-    public UUID getRecipientUserId() {
+    public Long getRecipientUserId() {
         return recipientUserId;
     }
 

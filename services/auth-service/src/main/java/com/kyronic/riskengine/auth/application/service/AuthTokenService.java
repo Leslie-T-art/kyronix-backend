@@ -49,6 +49,10 @@ public class AuthTokenService {
                 .claim("userId", principal.getUserId().toString())
                 .claim("roles", principal.getRoles())
                 .claim("permissions", principal.getPermissions())
+                .claim("departmentIds", principal.getDepartmentId() == null ? List.of() : List.of(principal.getDepartmentId().toString()))
+                .claim("branchIds", principal.getBranchId() == null ? List.of() : List.of(principal.getBranchId().toString()))
+                .claim("active", principal.isEnabled())
+                .claim("locked", !principal.isAccountNonLocked())
                 .build();
 
         String accessToken = jwtEncoder.encode(JwtEncoderParameters.from(

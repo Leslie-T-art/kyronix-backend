@@ -5,20 +5,22 @@ import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
 
 @Entity
 @Table(name = "user_accounts")
 public class UserAccount {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -36,10 +38,10 @@ public class UserAccount {
     private boolean locked;
 
     @Column
-    private UUID departmentId;
+    private Long departmentId;
 
     @Column
-    private UUID branchId;
+    private Long branchId;
 
     @Column(nullable = false)
     private boolean deleted;
@@ -57,14 +59,14 @@ public class UserAccount {
     protected UserAccount() {
     }
 
-    public UserAccount(UUID id,
+    public UserAccount(Long id,
                        String username,
                        String fullName,
                        String passwordHash,
                        boolean active,
                        boolean locked,
-                       UUID departmentId,
-                       UUID branchId,
+                       Long departmentId,
+                       Long branchId,
                        boolean deleted,
                        Set<String> roles,
                        Set<String> permissions) {
@@ -81,7 +83,7 @@ public class UserAccount {
         this.permissions = permissions;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
@@ -105,11 +107,11 @@ public class UserAccount {
         return locked;
     }
 
-    public UUID getDepartmentId() {
+    public Long getDepartmentId() {
         return departmentId;
     }
 
-    public UUID getBranchId() {
+    public Long getBranchId() {
         return branchId;
     }
 
@@ -130,8 +132,8 @@ public class UserAccount {
                               String passwordHash,
                               boolean active,
                               boolean locked,
-                              UUID departmentId,
-                              UUID branchId,
+                              Long departmentId,
+                              Long branchId,
                               Set<String> roles,
                               Set<String> permissions) {
         this.username = username;

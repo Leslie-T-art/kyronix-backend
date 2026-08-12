@@ -1,10 +1,9 @@
 package com.kyronic.riskengine.auth.application.dto;
 
 import java.util.Set;
-import java.util.UUID;
 
 public record AuthMeResponse(
-        UUID id,
+        Long id,
         String username,
         String fullName,
         boolean active,
@@ -16,7 +15,7 @@ public record AuthMeResponse(
 ) {
 
     public record ReferenceAssignment(
-            UUID id,
+            Long id,
             String code,
             String name
     ) {

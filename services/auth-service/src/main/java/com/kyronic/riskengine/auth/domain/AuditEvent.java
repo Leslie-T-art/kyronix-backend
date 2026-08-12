@@ -2,18 +2,20 @@ package com.kyronic.riskengine.auth.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "audit_events")
 public class AuditEvent {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, length = 120)
     private String eventType;
@@ -34,7 +36,7 @@ public class AuditEvent {
     private String businessReference;
 
     @Column
-    private UUID userId;
+    private Long userId;
 
     @Column(length = 150)
     private String username;
@@ -78,14 +80,14 @@ public class AuditEvent {
     protected AuditEvent() {
     }
 
-    public AuditEvent(UUID id,
+    public AuditEvent(Long id,
                       String eventType,
                       String action,
                       String serviceName,
                       String entityType,
                       String entityId,
                       String businessReference,
-                      UUID userId,
+                      Long userId,
                       String username,
                       String roles,
                       String permissions,
@@ -122,7 +124,7 @@ public class AuditEvent {
         this.occurredAt = occurredAt;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
@@ -150,7 +152,7 @@ public class AuditEvent {
         return businessReference;
     }
 
-    public UUID getUserId() {
+    public Long getUserId() {
         return userId;
     }
 

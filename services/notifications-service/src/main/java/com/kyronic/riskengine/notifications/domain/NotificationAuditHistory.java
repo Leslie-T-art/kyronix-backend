@@ -22,7 +22,7 @@ public class NotificationAuditHistory {
     private String action;
 
     @Column
-    private UUID actorUserId;
+    private Long actorUserId;
 
     @Column(nullable = false, length = 120)
     private String actorUsername;
@@ -39,7 +39,7 @@ public class NotificationAuditHistory {
     public NotificationAuditHistory(UUID id,
                                     UUID notificationId,
                                     String action,
-                                    UUID actorUserId,
+                                    Long actorUserId,
                                     String actorUsername,
                                     Instant occurredAt,
                                     String correlationId) {

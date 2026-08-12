@@ -5,25 +5,24 @@ import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.UUID;
 
 public class LocalUserPrincipal extends User {
 
-    private final UUID userId;
+    private final Long userId;
     private final String fullName;
-    private final UUID departmentId;
-    private final UUID branchId;
+    private final Long departmentId;
+    private final Long branchId;
     private final Set<String> roles;
     private final Set<String> permissions;
 
-    public LocalUserPrincipal(UUID userId,
+    public LocalUserPrincipal(Long userId,
                               String username,
                               String password,
                               boolean enabled,
                               boolean accountNonLocked,
                               String fullName,
-                              UUID departmentId,
-                              UUID branchId,
+                              Long departmentId,
+                              Long branchId,
                               Set<String> roles,
                               Set<String> permissions,
                               Collection<? extends GrantedAuthority> authorities) {
@@ -36,7 +35,7 @@ public class LocalUserPrincipal extends User {
         this.permissions = permissions;
     }
 
-    public UUID getUserId() {
+    public Long getUserId() {
         return userId;
     }
 
@@ -48,11 +47,11 @@ public class LocalUserPrincipal extends User {
         return fullName;
     }
 
-    public UUID getDepartmentId() {
+    public Long getDepartmentId() {
         return departmentId;
     }
 
-    public UUID getBranchId() {
+    public Long getBranchId() {
         return branchId;
     }
 

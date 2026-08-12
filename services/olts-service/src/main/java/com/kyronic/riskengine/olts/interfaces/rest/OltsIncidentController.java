@@ -48,7 +48,7 @@ public class OltsIncidentController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @Operation(summary = "Create incident", description = "Create a new OLTS incident draft. The backend generates the incidentId and correlationId.")
+    @Operation(summary = "Create incident", description = "Create a new OLTS incident draft. The backend generates the eventId, metadata, and correlationId.")
     public ApiResponse<IncidentResponse> create(@Valid @RequestBody CreateIncidentRequest request,
                                                 @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
@@ -59,7 +59,7 @@ public class OltsIncidentController {
     }
 
     @GetMapping
-    @Operation(summary = "List incidents", description = "Fetch all non-deleted captured incidents.")
+    @Operation(summary = "List incidents", description = "Fetch all captured incidents.")
     public ApiResponse<List<IncidentResponse>> list(@AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
         List<IncidentResponse> incidents = service.listAll().stream()
@@ -70,7 +70,7 @@ public class OltsIncidentController {
     }
 
     @GetMapping("/{incidentId}")
-    @Operation(summary = "Get incident", description = "Fetch one captured incident by its system-generated incidentId.")
+    @Operation(summary = "Get incident", description = "Fetch one captured incident by its system-generated eventId.")
     public ApiResponse<IncidentResponse> get(@PathVariable("incidentId") String incidentId,
                                              @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
@@ -82,7 +82,7 @@ public class OltsIncidentController {
     }
 
     @PutMapping("/{incidentId}")
-    @Operation(summary = "Update incident", description = "Update a draft OLTS incident by its system-generated incidentId.")
+    @Operation(summary = "Update incident", description = "Update a draft OLTS incident by its system-generated eventId.")
     public ApiResponse<IncidentResponse> update(@PathVariable("incidentId") String incidentId,
                                                 @Valid @RequestBody UpdateIncidentRequest request,
                                                 @AuthenticationPrincipal Jwt jwt) {
@@ -94,7 +94,7 @@ public class OltsIncidentController {
     }
 
     @DeleteMapping("/{incidentId}")
-    @Operation(summary = "Delete incident", description = "Soft delete a draft OLTS incident by its system-generated incidentId.")
+    @Operation(summary = "Delete incident", description = "Hard delete a draft OLTS incident by its system-generated eventId.")
     public ApiResponse<Void> delete(@PathVariable("incidentId") String incidentId, @AuthenticationPrincipal Jwt jwt) {
         String correlationId = correlationId();
         service.delete(incidentId, AuthenticatedUser.fromJwt(jwt).userId(), correlationId);
@@ -166,33 +166,58 @@ public class OltsIncidentController {
             return response;
         }
         String authorizationHeader = "Bearer " + jwt.getTokenValue();
-        Map<UUID, String> departmentsById = authReferenceDataGateway.listDepartments(authorizationHeader).stream()
+        Map<Long, String> departmentsById = authReferenceDataGateway.listDepartments(authorizationHeader).stream()
                 .collect(java.util.stream.Collectors.toMap(ReferenceDataOptionResponse::id, ReferenceDataOptionResponse::name, (left, right) -> left));
-        Map<UUID, String> branchesById = authReferenceDataGateway.listBranches(authorizationHeader).stream()
+        Map<Long, String> branchesById = authReferenceDataGateway.listBranches(authorizationHeader).stream()
                 .collect(java.util.stream.Collectors.toMap(ReferenceDataOptionResponse::id, ReferenceDataOptionResponse::name, (left, right) -> left));
         return new IncidentResponse(
                 response.id(),
-                response.incidentId(),
+                response.eventId(),
+                response.eventTitle(),
+                response.eventStatusId(),
+                response.incidentDate(),
+                response.incidentEndDate(),
+                response.detectionDate(),
                 response.departmentId(),
                 departmentsById.get(response.departmentId()),
                 response.branchId(),
                 branchesById.get(response.branchId()),
-                response.incidentDate(),
-                response.discoveryDate(),
-                response.lossCategory(),
-                response.eventType(),
-                response.severity(),
+                response.processName(),
+                response.productService(),
+                response.baselEventCategoryId(),
+                response.eventDescription(),
+                response.immediateActionTaken(),
+                response.rootCauseCategoryId(),
+                response.rootCauseDescription(),
+                response.controlId(),
+                response.failedMissingControl(),
+                response.currencyId(),
+                response.grossLoss(),
+                response.restitutionRemediationCost(),
+                response.recoveryMethodId(),
+                response.netLoss(),
+                response.accountingGlReference(),
+                response.dataSourceId(),
+                response.nonFinancialImpactType(),
+                response.nonFinancialImpactDetails(),
+                response.overallEventSeverity(),
+                response.correctiveAction(),
+                response.actionOwner(),
+                response.actionTargetDate(),
+                response.actionStatusId(),
+                response.preventiveControlImplemented(),
+                response.validationEvidence(),
+                response.closureValidationDate(),
+                response.closureComment(),
                 response.authorizationStatus(),
                 response.status(),
-                response.grossLoss(),
-                response.recoveries(),
-                response.netLoss(),
-                response.potentialLoss(),
-                response.inputterUserId(),
-                response.responsiblePersonId(),
-                response.responsiblePersonName(),
+                response.eventOwner(),
+                response.reportedBy(),
+                response.createdBy(),
                 response.createdAt(),
-                response.createdBy()
+                response.lastUpdatedBy(),
+                response.lastUpdatedAt(),
+                response.recordVersion()
         );
     }
 

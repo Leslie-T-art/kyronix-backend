@@ -2,11 +2,9 @@ package com.kyronic.riskengine.common.authorization;
 
 import com.kyronic.riskengine.common.api.ErrorCodes;
 
-import java.util.UUID;
-
 public class SegregationOfDutiesPolicy {
 
-    public void validate(UUID inputterUserId, UUID lastModifiedBy, UUID authorizerUserId) {
+    public void validate(Long inputterUserId, Long lastModifiedBy, Long authorizerUserId) {
         if (inputterUserId.equals(authorizerUserId)) {
             throw new AuthorizationException("The inputter cannot authorize the same record", ErrorCodes.MAKER_CANNOT_AUTHORIZE);
         }

@@ -2,7 +2,6 @@ package com.kyronic.riskengine.auth.application.dto;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.UUID;
 
 public record LoginResponse(
         String accessToken,
@@ -10,11 +9,11 @@ public record LoginResponse(
         long expiresInSeconds,
         Instant issuedAt,
         Instant expiresAt,
-        UUID userId,
+        Long userId,
         String username,
         String fullName,
-        UUID departmentId,
-        UUID branchId,
+        Long departmentId,
+        Long branchId,
         Set<String> roles,
         Set<String> permissions
 ) {

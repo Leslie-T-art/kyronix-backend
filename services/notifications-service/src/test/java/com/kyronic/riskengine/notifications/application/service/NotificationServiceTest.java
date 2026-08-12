@@ -75,7 +75,7 @@ class NotificationServiceTest {
         NotificationService service = service(
                 notifications,
                 new ArrayList<>(),
-                new FixedCurrentUserProvider(UUID.randomUUID(), "another.user"),
+                new FixedCurrentUserProvider(999999L, "another.user"),
                 new FixedReferenceGenerator("NTF-2026-00001"),
                 new NotificationActionUrlFactory(),
                 Clock.fixed(Instant.parse("2026-08-06T08:30:00Z"), ZoneOffset.UTC)
@@ -240,7 +240,7 @@ class NotificationServiceTest {
         );
     }
 
-    private NotificationEventRequest event(List<UUID> recipientUserIds) {
+    private NotificationEventRequest event(List<Long> recipientUserIds) {
         return new NotificationEventRequest(
                 UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
                 "authorization.requested.v1",
@@ -259,7 +259,7 @@ class NotificationServiceTest {
         );
     }
 
-    private InAppNotification existingNotification(UUID recipientUserId, UUID id) {
+    private InAppNotification existingNotification(Long recipientUserId, UUID id) {
         return new InAppNotification(
                 id,
                 "NTF-2026-00001",
@@ -287,25 +287,25 @@ class NotificationServiceTest {
         );
     }
 
-    private UUID recipientUserId() {
-        return UUID.fromString("22222222-2222-2222-2222-222222222222");
+    private Long recipientUserId() {
+        return 222222L;
     }
 
-    private UUID actorUserId() {
-        return UUID.fromString("33333333-3333-3333-3333-333333333333");
+    private Long actorUserId() {
+        return 333333L;
     }
 
     private static final class FixedCurrentUserProvider extends NotificationCurrentUserProvider {
-        private final UUID userId;
+        private final Long userId;
         private final String username;
 
-        private FixedCurrentUserProvider(UUID userId, String username) {
+        private FixedCurrentUserProvider(Long userId, String username) {
             this.userId = userId;
             this.username = username;
         }
 
         @Override
-        public UUID currentUserId() {
+        public Long currentUserId() {
             return userId;
         }
 

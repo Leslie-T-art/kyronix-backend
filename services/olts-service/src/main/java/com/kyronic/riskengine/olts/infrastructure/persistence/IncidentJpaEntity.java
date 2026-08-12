@@ -2,6 +2,7 @@ package com.kyronic.riskengine.olts.infrastructure.persistence;
 
 import com.kyronic.riskengine.common.authorization.AuthorizationStatus;
 import com.kyronic.riskengine.olts.domain.model.IncidentStatus;
+import com.kyronic.riskengine.olts.domain.model.OltsIncident;
 import com.kyronic.riskengine.olts.domain.model.Severity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,141 +22,259 @@ public class IncidentJpaEntity {
 
     @Id
     private UUID id;
+
     @Column(nullable = false, unique = true)
     private String incidentId;
+
     @Column(nullable = false)
-    private UUID departmentId;
+    private Long inputterUserId;
+
     @Column(nullable = false)
-    private UUID branchId;
-    @Column(nullable = false)
-    private UUID inputterUserId;
-    @Column(nullable = false)
-    private LocalDate incidentDate;
-    @Column(nullable = false)
-    private LocalDate discoveryDate;
-    @Column(nullable = false, length = 50)
-    private String lossCategory;
-    @Column(nullable = false, length = 50)
-    private String eventType;
-    @Enumerated(EnumType.STRING)
-    private Severity severity;
-    @Column(nullable = false, length = 4000)
-    private String description;
-    @Column(nullable = false, length = 3)
-    private String currencyCode;
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal grossLoss;
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal recoveries;
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal netLoss;
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal potentialLoss;
-    @Column(nullable = false)
-    private UUID responsiblePersonId;
-    @Column(nullable = false)
-    private String responsiblePersonName;
-    @Enumerated(EnumType.STRING)
-    private AuthorizationStatus authorizationStatus;
-    @Enumerated(EnumType.STRING)
-    private IncidentStatus status;
-    @Column(nullable = false)
-    private Integer recordVersion;
-    @Column(nullable = false)
-    private boolean activeVersion;
+    private Long createdBy;
+
     @Column(nullable = false)
     private Instant createdAt;
+
     @Column(nullable = false)
-    private UUID createdBy;
-    private UUID submittedBy;
+    private String eventTitle;
+
+    @Column(nullable = false)
+    private Long eventStatusId;
+
+    @Column(nullable = false)
+    private LocalDate incidentDate;
+
+    private LocalDate incidentEndDate;
+
+    @Column(name = "discovery_date", nullable = false)
+    private LocalDate detectionDate;
+
+    @Column(nullable = false)
+    private Long departmentId;
+
+    @Column(nullable = false)
+    private Long branchId;
+
+    @Column(nullable = false)
+    private String processName;
+
+    @Column(nullable = false)
+    private String productService;
+
+    @Column(nullable = false)
+    private Long baselEventCategoryId;
+
+    @Column(name = "description", nullable = false, length = 4000)
+    private String eventDescription;
+
+    @Column(length = 4000)
+    private String immediateActionTaken;
+
+    @Column(nullable = false)
+    private Long rootCauseCategoryId;
+
+    @Column(length = 4000)
+    private String rootCauseDescription;
+
+    private Long controlId;
+
+    @Column(nullable = false)
+    private Boolean failedMissingControl;
+
+    @Column(nullable = false)
+    private Long currencyId;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal grossLoss;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal restitutionRemediationCost;
+
+    private Long recoveryMethodId;
+
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal netLoss;
+
+    private String accountingGlReference;
+
+    private Long dataSourceId;
+
+    private String nonFinancialImpactType;
+
+    @Column(length = 4000)
+    private String nonFinancialImpactDetails;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "severity", nullable = false)
+    private Severity overallEventSeverity;
+
+    @Column(length = 4000)
+    private String correctiveAction;
+
+    private String actionOwner;
+
+    private LocalDate actionTargetDate;
+
+    private Long actionStatusId;
+
+    @Column(nullable = false)
+    private Boolean preventiveControlImplemented;
+
+    @Column(length = 4000)
+    private String validationEvidence;
+
+    private LocalDate closureValidationDate;
+
+    @Column(length = 4000)
+    private String closureComment;
+
+    @Enumerated(EnumType.STRING)
+    private AuthorizationStatus authorizationStatus;
+
+    @Enumerated(EnumType.STRING)
+    private IncidentStatus status;
+
+    @Column(nullable = false)
+    private Integer recordVersion;
+
+    private String eventOwner;
+
+    private String reportedBy;
+
+    @Column(nullable = false)
+    private String createdByUsername;
+
+    @Column(nullable = false)
+    private String lastUpdatedByUsername;
+
+    private Long submittedBy;
+
     private Instant submittedAt;
-    private UUID authorizedBy;
+
+    private Long authorizedBy;
+
     private Instant authorizedAt;
+
     @Column(nullable = false)
-    private UUID lastModifiedBy;
+    private Long lastModifiedBy;
+
     @Column(nullable = false)
     private Instant updatedAt;
-    @Column(nullable = false)
-    private boolean deleted;
-    private UUID deletedBy;
-    private Instant deletedAt;
 
     protected IncidentJpaEntity() {
     }
 
-    public static IncidentJpaEntity fromDomain(com.kyronic.riskengine.olts.domain.model.OltsIncident incident) {
+    public static IncidentJpaEntity fromDomain(OltsIncident incident) {
         IncidentJpaEntity entity = new IncidentJpaEntity();
         entity.id = incident.getId();
         entity.incidentId = incident.getIncidentId();
+        entity.inputterUserId = incident.getInputterUserId();
+        entity.createdBy = incident.getCreatedBy();
+        entity.createdAt = incident.getCreatedAt();
+        entity.eventTitle = incident.getEventTitle();
+        entity.eventStatusId = incident.getEventStatusId();
+        entity.incidentDate = incident.getIncidentDate();
+        entity.incidentEndDate = incident.getIncidentEndDate();
+        entity.detectionDate = incident.getDetectionDate();
         entity.departmentId = incident.getDepartmentId();
         entity.branchId = incident.getBranchId();
-        entity.inputterUserId = incident.getInputterUserId();
-        entity.incidentDate = incident.getIncidentDate();
-        entity.discoveryDate = incident.getDiscoveryDate();
-        entity.lossCategory = incident.getLossCategory();
-        entity.eventType = incident.getEventType();
-        entity.severity = incident.getSeverity();
-        entity.description = incident.getDescription();
-        entity.currencyCode = incident.getCurrencyCode();
+        entity.processName = incident.getProcessName();
+        entity.productService = incident.getProductService();
+        entity.baselEventCategoryId = incident.getBaselEventCategoryId();
+        entity.eventDescription = incident.getEventDescription();
+        entity.immediateActionTaken = incident.getImmediateActionTaken();
+        entity.rootCauseCategoryId = incident.getRootCauseCategoryId();
+        entity.rootCauseDescription = incident.getRootCauseDescription();
+        entity.controlId = incident.getControlId();
+        entity.failedMissingControl = incident.getFailedMissingControl();
+        entity.currencyId = incident.getCurrencyId();
         entity.grossLoss = incident.getGrossLoss();
-        entity.recoveries = incident.getRecoveries();
+        entity.restitutionRemediationCost = incident.getRestitutionRemediationCost();
+        entity.recoveryMethodId = incident.getRecoveryMethodId();
         entity.netLoss = incident.getNetLoss();
-        entity.potentialLoss = incident.getPotentialLoss();
-        entity.responsiblePersonId = incident.getResponsiblePersonId();
-        entity.responsiblePersonName = incident.getResponsiblePersonName();
+        entity.accountingGlReference = incident.getAccountingGlReference();
+        entity.dataSourceId = incident.getDataSourceId();
+        entity.nonFinancialImpactType = incident.getNonFinancialImpactType();
+        entity.nonFinancialImpactDetails = incident.getNonFinancialImpactDetails();
+        entity.overallEventSeverity = incident.getOverallEventSeverity();
+        entity.correctiveAction = incident.getCorrectiveAction();
+        entity.actionOwner = incident.getActionOwner();
+        entity.actionTargetDate = incident.getActionTargetDate();
+        entity.actionStatusId = incident.getActionStatusId();
+        entity.preventiveControlImplemented = incident.getPreventiveControlImplemented();
+        entity.validationEvidence = incident.getValidationEvidence();
+        entity.closureValidationDate = incident.getClosureValidationDate();
+        entity.closureComment = incident.getClosureComment();
         entity.authorizationStatus = incident.getAuthorizationStatus();
         entity.status = incident.getStatus();
         entity.recordVersion = incident.getRecordVersion();
-        entity.activeVersion = incident.isActiveVersion();
-        entity.createdAt = incident.getCreatedAt();
-        entity.createdBy = incident.getCreatedBy();
+        entity.eventOwner = incident.getEventOwner();
+        entity.reportedBy = incident.getReportedBy();
+        entity.createdByUsername = incident.getCreatedByUsername();
+        entity.lastUpdatedByUsername = incident.getLastUpdatedByUsername();
         entity.submittedBy = incident.getSubmittedBy();
         entity.submittedAt = incident.getSubmittedAt();
         entity.authorizedBy = incident.getAuthorizedBy();
         entity.authorizedAt = incident.getAuthorizedAt();
         entity.lastModifiedBy = incident.getLastModifiedBy();
         entity.updatedAt = incident.getUpdatedAt();
-        entity.deleted = incident.isDeleted();
-        entity.deletedBy = incident.getDeletedBy();
-        entity.deletedAt = incident.getDeletedAt();
         return entity;
     }
 
-    public com.kyronic.riskengine.olts.domain.model.OltsIncident toDomain() {
-        return com.kyronic.riskengine.olts.domain.model.OltsIncident.rehydrate(
+    public OltsIncident toDomain() {
+        return OltsIncident.rehydrate(
                 id,
                 incidentId,
+                inputterUserId,
+                createdBy,
+                createdAt,
+                eventTitle,
+                eventStatusId,
+                incidentDate,
+                incidentEndDate,
+                detectionDate,
                 departmentId,
                 branchId,
-                inputterUserId,
-                incidentDate,
-                discoveryDate,
-                lossCategory,
-                eventType,
-                severity,
-                description,
-                currencyCode,
+                processName,
+                productService,
+                baselEventCategoryId,
+                eventDescription,
+                immediateActionTaken,
+                rootCauseCategoryId,
+                rootCauseDescription,
+                controlId,
+                failedMissingControl,
+                currencyId,
                 grossLoss,
-                recoveries,
-                potentialLoss,
-                responsiblePersonId,
-                responsiblePersonName,
+                restitutionRemediationCost,
+                recoveryMethodId,
+                netLoss,
+                accountingGlReference,
+                dataSourceId,
+                nonFinancialImpactType,
+                nonFinancialImpactDetails,
+                overallEventSeverity,
+                correctiveAction,
+                actionOwner,
+                actionTargetDate,
+                actionStatusId,
+                preventiveControlImplemented,
+                validationEvidence,
+                closureValidationDate,
+                closureComment,
                 recordVersion,
-                activeVersion,
-                createdAt,
-                createdBy,
                 authorizationStatus,
                 status,
-                netLoss,
+                eventOwner,
+                reportedBy,
+                createdByUsername,
+                lastUpdatedByUsername,
                 submittedBy,
                 submittedAt,
                 authorizedBy,
                 authorizedAt,
                 lastModifiedBy,
-                updatedAt,
-                deleted,
-                deletedBy,
-                deletedAt
+                updatedAt
         );
     }
 }

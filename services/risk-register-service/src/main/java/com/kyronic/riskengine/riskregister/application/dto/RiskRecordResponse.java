@@ -2,10 +2,9 @@ package com.kyronic.riskengine.riskregister.application.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 public record RiskRecordResponse(
-        UUID id,
+        Long id,
         String riskId,
         String riskTitle,
         String category,

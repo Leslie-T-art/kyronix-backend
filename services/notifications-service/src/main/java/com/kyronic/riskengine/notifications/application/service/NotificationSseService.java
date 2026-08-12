@@ -7,16 +7,15 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class NotificationSseService {
 
-    private final Map<UUID, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
+    private final Map<Long, List<SseEmitter>> emitters = new ConcurrentHashMap<>();
 
-    public SseEmitter subscribe(UUID userId) {
+    public SseEmitter subscribe(Long userId) {
         SseEmitter emitter = new SseEmitter(0L);
         emitters.computeIfAbsent(userId, ignored -> new CopyOnWriteArrayList<>()).add(emitter);
         emitter.onCompletion(() -> remove(userId, emitter));
@@ -29,7 +28,7 @@ public class NotificationSseService {
         List<SseEmitter> userEmitters = emitters.get(notification.id() == null ? null : null);
     }
 
-    public void publishToUser(UUID userId, NotificationResponse notification) {
+    public void publishToUser(Long userId, NotificationResponse notification) {
         List<SseEmitter> userEmitters = emitters.getOrDefault(userId, List.of());
         for (SseEmitter emitter : userEmitters) {
             try {
@@ -43,7 +42,7 @@ public class NotificationSseService {
         }
     }
 
-    private void remove(UUID userId, SseEmitter emitter) {
+    private void remove(Long userId, SseEmitter emitter) {
         List<SseEmitter> userEmitters = emitters.get(userId);
         if (userEmitters == null) {
             return;

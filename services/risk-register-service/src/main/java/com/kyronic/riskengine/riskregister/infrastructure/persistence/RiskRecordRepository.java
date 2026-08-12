@@ -6,11 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-public interface RiskRecordRepository extends JpaRepository<RiskRecord, UUID> {
+public interface RiskRecordRepository extends JpaRepository<RiskRecord, Long> {
 
-    Optional<RiskRecord> findByRiskIdAndDeletedFalse(String riskId);
+    Optional<RiskRecord> findByRiskId(String riskId);
 
-    List<RiskRecord> findAllByDeletedFalse(Sort sort);
+    List<RiskRecord> findAll(Sort sort);
 }

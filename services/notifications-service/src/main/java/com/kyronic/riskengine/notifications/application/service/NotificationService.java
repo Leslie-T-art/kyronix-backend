@@ -70,7 +70,7 @@ public class NotificationService {
                                            String sourceService,
                                            int page,
                                            int size) {
-        UUID currentUserId = requireCurrentUserId();
+        Long currentUserId = requireCurrentUserId();
         List<NotificationResponse> filtered = notificationRepository.findAllByRecipientUserId(currentUserId, Sort.by(Sort.Direction.DESC, "createdAt")).stream()
                 .filter(notification -> !notification.isExpired(Instant.now(clock)))
                 .filter(notification -> type == null || notification.getType() == type)
@@ -93,7 +93,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public UnreadCountResponse unreadCount() {
-        UUID currentUserId = requireCurrentUserId();
+        Long currentUserId = requireCurrentUserId();
         long count = notificationRepository.findAllByRecipientUserId(currentUserId, Sort.unsorted()).stream()
                 .filter(notification -> notification.getState() == NotificationState.ACTIVE)
                 .filter(notification -> notification.getReadState() == ReadState.UNREAD)
@@ -135,7 +135,7 @@ public class NotificationService {
     }
 
     public void readAll() {
-        UUID currentUserId = requireCurrentUserId();
+        Long currentUserId = requireCurrentUserId();
         Instant now = Instant.now(clock);
         notificationRepository.findAllByRecipientUserId(currentUserId, Sort.unsorted()).stream()
                 .filter(notification -> notification.getState() == NotificationState.ACTIVE)
@@ -148,7 +148,7 @@ public class NotificationService {
     }
 
     public void archiveAllRead() {
-        UUID currentUserId = requireCurrentUserId();
+        Long currentUserId = requireCurrentUserId();
         Instant now = Instant.now(clock);
         notificationRepository.findAllByRecipientUserId(currentUserId, Sort.unsorted()).stream()
                 .filter(notification -> notification.getReadState() == ReadState.READ)
@@ -179,7 +179,7 @@ public class NotificationService {
                 });
     }
 
-    private NotificationResponse createRecipientNotification(NotificationEventRequest event, UUID recipientUserId, Instant occurredAt) {
+    private NotificationResponse createRecipientNotification(NotificationEventRequest event, Long recipientUserId, Instant occurredAt) {
         return notificationRepository.findByEventIdAndRecipientUserIdAndType(event.eventId(), recipientUserId, event.type())
                 .map(this::toResponse)
                 .orElseGet(() -> {
@@ -218,7 +218,7 @@ public class NotificationService {
     }
 
     private InAppNotification getOwned(UUID notificationId) {
-        UUID currentUserId = requireCurrentUserId();
+        Long currentUserId = requireCurrentUserId();
         InAppNotification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new NotificationNotFoundException(notificationId));
         if (!notification.getRecipientUserId().equals(currentUserId)) {
@@ -227,8 +227,8 @@ public class NotificationService {
         return notification;
     }
 
-    private UUID requireCurrentUserId() {
-        UUID currentUserId = currentUserProvider.currentUserId();
+    private Long requireCurrentUserId() {
+        Long currentUserId = currentUserProvider.currentUserId();
         if (currentUserId == null) {
             throw new NotificationAccessDeniedException(null);
         }

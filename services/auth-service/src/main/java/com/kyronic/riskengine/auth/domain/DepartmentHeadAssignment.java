@@ -2,36 +2,38 @@ package com.kyronic.riskengine.auth.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 @Table(name = "department_head_assignments")
 public class DepartmentHeadAssignment {
 
     @Id
-    private UUID assignmentId;
-    private UUID departmentId;
-    private UUID userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long assignmentId;
+    private Long departmentId;
+    private Long userId;
     private Instant effectiveFrom;
     private Instant effectiveTo;
     private boolean active;
     private boolean delegated;
-    private UUID delegatedBy;
+    private Long delegatedBy;
     @Column(length = 500)
     private String delegationReason;
     private Instant createdAt;
-    private UUID createdBy;
+    private Long createdBy;
 
     protected DepartmentHeadAssignment() {
     }
 
-    public DepartmentHeadAssignment(UUID assignmentId, UUID departmentId, UUID userId, Instant effectiveFrom, Instant effectiveTo,
-                                    boolean active, boolean delegated, UUID delegatedBy, String delegationReason,
-                                    Instant createdAt, UUID createdBy) {
+    public DepartmentHeadAssignment(Long assignmentId, Long departmentId, Long userId, Instant effectiveFrom, Instant effectiveTo,
+                                    boolean active, boolean delegated, Long delegatedBy, String delegationReason,
+                                    Instant createdAt, Long createdBy) {
         this.assignmentId = assignmentId;
         this.departmentId = departmentId;
         this.userId = userId;

@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -37,7 +36,7 @@ public class RiskRegisterService {
         Instant now = Instant.now(clock);
         String actor = currentUserProvider.currentUsername();
         RiskRecord riskRecord = new RiskRecord(
-                UUID.randomUUID(),
+                null,
                 riskIdGenerator.nextId(),
                 request.riskTitle(),
                 request.category(),
@@ -60,7 +59,6 @@ public class RiskRegisterService {
                 actor,
                 now,
                 actor,
-                false,
                 null
         );
         return toResponse(riskRecordRepository.save(riskRecord));
@@ -68,7 +66,7 @@ public class RiskRegisterService {
 
     @Transactional(readOnly = true)
     public List<RiskRecordResponse> list() {
-        return riskRecordRepository.findAllByDeletedFalse(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
+        return riskRecordRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -106,12 +104,11 @@ public class RiskRegisterService {
 
     public void delete(String riskId) {
         RiskRecord riskRecord = findActiveByRiskId(riskId);
-        riskRecord.markDeleted(Instant.now(clock), currentUserProvider.currentUsername());
-        riskRecordRepository.save(riskRecord);
+        riskRecordRepository.delete(riskRecord);
     }
 
     private RiskRecord findActiveByRiskId(String riskId) {
-        return riskRecordRepository.findByRiskIdAndDeletedFalse(riskId)
+        return riskRecordRepository.findByRiskId(riskId)
                 .orElseThrow(() -> new RiskRecordNotFoundException(riskId));
     }
 

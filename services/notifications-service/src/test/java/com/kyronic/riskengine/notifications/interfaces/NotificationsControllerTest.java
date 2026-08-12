@@ -130,8 +130,8 @@ class NotificationsControllerTest {
 
     private static final class FixedCurrentUserProvider extends NotificationCurrentUserProvider {
         @Override
-        public UUID currentUserId() {
-            return UUID.fromString("22222222-2222-2222-2222-222222222222");
+        public Long currentUserId() {
+            return 222222L;
         }
     }
 }

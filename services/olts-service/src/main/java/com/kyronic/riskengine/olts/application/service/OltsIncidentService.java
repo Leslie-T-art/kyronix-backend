@@ -46,24 +46,44 @@ public class OltsIncidentService {
         this.clock = clock;
     }
 
-    public OltsIncident create(CreateIncidentRequest request, UUID inputterUserId, String responsiblePersonName, String correlationId) {
+    public OltsIncident create(CreateIncidentRequest request, Long inputterUserId, String responsiblePersonName, String correlationId) {
         OltsIncident incident = OltsIncident.create(
                 incidentIdGenerator.nextIncidentId(),
-                request.departmentId(),
-                request.branchId(),
-                inputterUserId,
-                request.incidentDate(),
-                request.discoveryDate(),
-                lossCategoryCatalog.requireValidCode(request.lossCategory()),
-                normalizeCode(request.eventType(), "event type"),
-                request.severity(),
-                request.description(),
-                request.currencyCode(),
-                request.grossLoss(),
-                request.recoveries(),
-                request.potentialLoss(),
                 inputterUserId,
                 responsiblePersonName,
+                request.eventStatusId(),
+                request.incidentDate(),
+                request.incidentEndDate(),
+                request.detectionDate(),
+                request.departmentId(),
+                request.branchId(),
+                request.eventTitle(),
+                request.processName(),
+                request.productService(),
+                request.baselEventCategoryId(),
+                request.eventDescription(),
+                request.immediateActionTaken(),
+                request.rootCauseCategoryId(),
+                request.rootCauseDescription(),
+                request.controlId(),
+                request.failedMissingControl(),
+                request.currencyId(),
+                request.grossLoss(),
+                request.restitutionRemediationCost(),
+                request.recoveryMethodId(),
+                request.accountingGlReference(),
+                request.dataSourceId(),
+                request.nonFinancialImpactType(),
+                request.nonFinancialImpactDetails(),
+                request.overallEventSeverity(),
+                request.correctiveAction(),
+                request.actionOwner(),
+                request.actionTargetDate(),
+                request.actionStatusId(),
+                request.preventiveControlImplemented(),
+                request.validationEvidence(),
+                request.closureValidationDate(),
+                request.closureComment(),
                 Instant.now(clock)
         );
         incidentStore.save(incident);
@@ -72,30 +92,50 @@ public class OltsIncidentService {
     }
 
     public List<OltsIncident> listAll() {
-        return incidentStore.findAllActive().stream()
+        return incidentStore.findAll().stream()
                 .sorted(Comparator.comparing(OltsIncident::getCreatedAt).reversed())
                 .toList();
     }
 
-    public OltsIncident update(String incidentId, UpdateIncidentRequest request, UUID actorUserId, String responsiblePersonName, String correlationId) {
+    public OltsIncident update(String incidentId, UpdateIncidentRequest request, Long actorUserId, String responsiblePersonName, String correlationId) {
         OltsIncident incident = incidentStore.findByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.updateDraft(
                 actorUserId,
+                responsiblePersonName,
+                request.eventTitle(),
+                request.eventStatusId(),
+                request.incidentDate(),
+                request.incidentEndDate(),
+                request.detectionDate(),
                 request.departmentId(),
                 request.branchId(),
-                request.incidentDate(),
-                request.discoveryDate(),
-                lossCategoryCatalog.requireValidCode(request.lossCategory()),
-                normalizeCode(request.eventType(), "event type"),
-                request.severity(),
-                request.description(),
-                request.currencyCode(),
+                request.processName(),
+                request.productService(),
+                request.baselEventCategoryId(),
+                request.eventDescription(),
+                request.immediateActionTaken(),
+                request.rootCauseCategoryId(),
+                request.rootCauseDescription(),
+                request.controlId(),
+                request.failedMissingControl(),
+                request.currencyId(),
                 request.grossLoss(),
-                request.recoveries(),
-                request.potentialLoss(),
-                actorUserId,
-                responsiblePersonName,
+                request.restitutionRemediationCost(),
+                request.recoveryMethodId(),
+                request.accountingGlReference(),
+                request.dataSourceId(),
+                request.nonFinancialImpactType(),
+                request.nonFinancialImpactDetails(),
+                request.overallEventSeverity(),
+                request.correctiveAction(),
+                request.actionOwner(),
+                request.actionTargetDate(),
+                request.actionStatusId(),
+                request.preventiveControlImplemented(),
+                request.validationEvidence(),
+                request.closureValidationDate(),
+                request.closureComment(),
                 Instant.now(clock)
         );
         incidentStore.save(incident);
@@ -103,15 +143,14 @@ public class OltsIncidentService {
         return incident;
     }
 
-    public void delete(String incidentId, UUID actorUserId, String correlationId) {
+    public void delete(String incidentId, Long actorUserId, String correlationId) {
         OltsIncident incident = incidentStore.findByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
-        incident.markDeleted(actorUserId, Instant.now(clock));
-        incidentStore.save(incident);
+        incidentStore.delete(incident);
         eventPublisher.publish(event("olts.incident.deleted.v1", incident, correlationId, incident.getInputterUserId(), null));
     }
 
-    public OltsIncident submit(String incidentId, UUID actorUserId, String correlationId) {
+    public OltsIncident submit(String incidentId, Long actorUserId, String correlationId) {
         OltsIncident incident = incidentStore.findByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.submit(actorUserId, Instant.now(clock));
@@ -122,7 +161,7 @@ public class OltsIncidentService {
         return incident;
     }
 
-    public OltsIncident startReview(String incidentId, UUID actorUserId, String correlationId) {
+    public OltsIncident startReview(String incidentId, Long actorUserId, String correlationId) {
         OltsIncident incident = incidentStore.findByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.beginAuthorizationReview(actorUserId, Instant.now(clock));
@@ -131,7 +170,7 @@ public class OltsIncidentService {
         return incident;
     }
 
-    public OltsIncident approve(String incidentId, UUID actorUserId, String correlationId) {
+    public OltsIncident approve(String incidentId, Long actorUserId, String correlationId) {
         OltsIncident incident = incidentStore.findByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.authorize(actorUserId, Instant.now(clock), segregationOfDutiesPolicy);
@@ -141,7 +180,7 @@ public class OltsIncidentService {
         return incident;
     }
 
-    public OltsIncident reject(String incidentId, UUID actorUserId, String reason, String correlationId) {
+    public OltsIncident reject(String incidentId, Long actorUserId, String reason, String correlationId) {
         OltsIncident incident = incidentStore.findByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.reject(actorUserId, reason, Instant.now(clock), segregationOfDutiesPolicy);
@@ -150,7 +189,7 @@ public class OltsIncidentService {
         return incident;
     }
 
-    public OltsIncident returnForCorrection(String incidentId, UUID actorUserId, String reason, String correlationId) {
+    public OltsIncident returnForCorrection(String incidentId, Long actorUserId, String reason, String correlationId) {
         OltsIncident incident = incidentStore.findByIncidentId(incidentId)
                 .orElseThrow(() -> new IllegalArgumentException("incident not found"));
         incident.returnForCorrection(actorUserId, reason, Instant.now(clock), segregationOfDutiesPolicy);
@@ -161,13 +200,6 @@ public class OltsIncidentService {
 
     public Optional<OltsIncident> getByIncidentId(String incidentId) {
         return incidentStore.findByIncidentId(incidentId);
-    }
-
-    private String normalizeCode(String code, String fieldName) {
-        if (code == null || code.isBlank()) {
-            throw new IllegalArgumentException(fieldName + " is required");
-        }
-        return code.trim().toUpperCase();
     }
 
     private AuthorizerCandidate resolveAuthorizer(OltsIncident incident) {
@@ -181,7 +213,7 @@ public class OltsIncidentService {
         ), candidates);
     }
 
-    private EventEnvelope event(String eventType, OltsIncident incident, String correlationId, UUID inputterUserId, UUID authorizerUserId) {
+    private EventEnvelope event(String eventType, OltsIncident incident, String correlationId, Long inputterUserId, Long authorizerUserId) {
         return new EventEnvelope(
                 UUID.randomUUID(),
                 eventType,
@@ -190,13 +222,13 @@ public class OltsIncidentService {
                 "OLTS_INCIDENT",
                 incident.getIncidentId(),
                 incident.getRecordVersion(),
-                incident.getDepartmentId(),
+                null,
                 Instant.now(clock),
                 correlationId,
                 correlationId,
-                inputterUserId,
-                incident.getInputterUserId(),
-                authorizerUserId,
+                null,
+                null,
+                null,
                 "olts-service",
                 "default",
                 Map.of("status", incident.getAuthorizationStatus().name())

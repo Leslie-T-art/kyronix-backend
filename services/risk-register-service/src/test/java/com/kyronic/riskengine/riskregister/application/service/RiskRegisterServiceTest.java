@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -85,7 +84,7 @@ class RiskRegisterServiceTest {
 
         RiskRecordResponse response = service.update("RISK-2026-00003", request);
 
-        RiskRecord saved = repository.findByRiskIdAndDeletedFalse("RISK-2026-00003").orElseThrow();
+        RiskRecord saved = repository.findByRiskId("RISK-2026-00003").orElseThrow();
         assertThat(saved.getRiskTitle()).isEqualTo("Updated risk");
         assertThat(saved.getUpdatedBy()).isEqualTo("editor");
         assertThat(saved.getUpdatedAt()).isEqualTo(NOW);
@@ -94,17 +93,14 @@ class RiskRegisterServiceTest {
     }
 
     @Test
-    void deleteMarksRiskRecordDeleted() {
+    void deleteRemovesRiskRecord() {
         InMemoryRiskRecordRepository repository = new InMemoryRiskRecordRepository();
         repository.save(record("RISK-2026-00004"));
         RiskRegisterService service = service(repository, "RISK-2026-00099", "deleter");
 
         service.delete("RISK-2026-00004");
 
-        RiskRecord deleted = repository.findByRiskId("RISK-2026-00004").orElseThrow();
-        assertThat(repository.findByRiskIdAndDeletedFalse("RISK-2026-00004")).isEmpty();
-        assertThat(deleted.getUpdatedBy()).isEqualTo("deleter");
-        assertThat(deleted.getUpdatedAt()).isEqualTo(NOW);
+        assertThat(repository.findByRiskId("RISK-2026-00004")).isEmpty();
     }
 
     @Test
@@ -150,7 +146,7 @@ class RiskRegisterServiceTest {
 
     private RiskRecord record(String riskId) {
         return new RiskRecord(
-                UUID.randomUUID(),
+                1L,
                 riskId,
                 "Liquidity stress",
                 "Financial",
@@ -173,7 +169,6 @@ class RiskRegisterServiceTest {
                 "creator",
                 NOW,
                 "creator",
-                false,
                 null
         );
     }
@@ -231,8 +226,9 @@ class RiskRegisterServiceTest {
         public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) {
             return switch (method.getName()) {
                 case "save" -> save((RiskRecord) args[0]);
-                case "findByRiskIdAndDeletedFalse" -> findByRiskIdAndDeletedFalse((String) args[0]);
-                case "findAllByDeletedFalse" -> findAllByDeletedFalse();
+                case "findByRiskId" -> findByRiskId((String) args[0]);
+                case "findAll" -> findAll();
+                case "delete" -> delete((RiskRecord) args[0]);
                 case "toString" -> "InMemoryRiskRecordRepository";
                 case "hashCode" -> System.identityHashCode(this);
                 case "equals" -> proxy == args[0];
@@ -247,18 +243,15 @@ class RiskRegisterServiceTest {
             return record;
         }
 
-        private Optional<RiskRecord> findByRiskIdAndDeletedFalse(String riskId) {
+        private List<RiskRecord> findAll() {
             return records.stream()
-                    .filter(record -> record.getRiskId().equals(riskId))
-                    .filter(record -> !record.isDeleted())
-                    .findFirst();
-        }
-
-        private List<RiskRecord> findAllByDeletedFalse() {
-            return records.stream()
-                    .filter(record -> !record.isDeleted())
                     .sorted(Comparator.comparing(RiskRecord::getCreatedAt).reversed())
                     .toList();
+        }
+
+        private Void delete(RiskRecord record) {
+            records.removeIf(existing -> existing.getId().equals(record.getId()));
+            return null;
         }
     }
 }

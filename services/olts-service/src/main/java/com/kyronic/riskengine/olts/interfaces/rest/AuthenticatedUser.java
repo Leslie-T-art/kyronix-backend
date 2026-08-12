@@ -2,10 +2,8 @@ package com.kyronic.riskengine.olts.interfaces.rest;
 
 import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.util.UUID;
-
 record AuthenticatedUser(
-        UUID userId,
+        Long userId,
         String username
 ) {
 
@@ -14,6 +12,6 @@ record AuthenticatedUser(
         if (!(claim instanceof String userIdValue)) {
             throw new IllegalArgumentException("JWT userId claim is missing");
         }
-        return new AuthenticatedUser(UUID.fromString(userIdValue), jwt.getSubject());
+        return new AuthenticatedUser(Long.valueOf(userIdValue), jwt.getSubject());
     }
 }

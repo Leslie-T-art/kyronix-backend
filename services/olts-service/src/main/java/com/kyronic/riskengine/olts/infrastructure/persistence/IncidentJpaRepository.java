@@ -7,7 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface IncidentJpaRepository extends JpaRepository<IncidentJpaEntity, UUID> {
-    Optional<IncidentJpaEntity> findByIncidentIdAndDeletedFalse(String incidentId);
+    Optional<IncidentJpaEntity> findByIncidentId(String incidentId);
 
-    List<IncidentJpaEntity> findAllByDeletedFalseOrderByCreatedAtDesc();
+    List<IncidentJpaEntity> findAllByOrderByCreatedAtDesc();
 }

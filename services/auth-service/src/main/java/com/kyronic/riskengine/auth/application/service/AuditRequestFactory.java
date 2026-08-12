@@ -137,12 +137,12 @@ public class AuditRequestFactory {
         return header == null || header.isBlank() ? UUID.randomUUID().toString() : header;
     }
 
-    private UUID extractUserId(Authentication authentication) {
+    private Long extractUserId(Authentication authentication) {
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
             return null;
         }
         String userId = jwt.getClaimAsString("userId");
-        return userId == null ? null : UUID.fromString(userId);
+        return userId == null ? null : Long.valueOf(userId);
     }
 
     private String extractUsername(Authentication authentication) {

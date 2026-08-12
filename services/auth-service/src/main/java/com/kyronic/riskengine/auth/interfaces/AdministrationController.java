@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/admin")
@@ -72,7 +71,7 @@ public class AdministrationController {
     @PutMapping("/users/{id}")
     @Operation(summary = "Update user")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_USERS')")
-    public ApiResponse<UserResponse> updateUser(@PathVariable("id") UUID id,
+    public ApiResponse<UserResponse> updateUser(@PathVariable("id") Long id,
                                                 @Valid @RequestBody UserUpsertRequest userRequest,
                                                 Authentication authentication,
                                                 HttpServletRequest request) {
@@ -85,7 +84,7 @@ public class AdministrationController {
     @DeleteMapping("/users/{id}")
     @Operation(summary = "Suspend/delete user")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_USERS')")
-    public ApiResponse<Void> deleteUser(@PathVariable("id") UUID id,
+    public ApiResponse<Void> deleteUser(@PathVariable("id") Long id,
                                         Authentication authentication,
                                         HttpServletRequest request) {
         UserResponse previous = administrationService.getUser(id);
@@ -118,7 +117,7 @@ public class AdministrationController {
     @PutMapping("/roles/{id}")
     @Operation(summary = "Update role")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_USERS')")
-    public ApiResponse<RoleDefinitionResponse> updateRole(@PathVariable("id") UUID id,
+    public ApiResponse<RoleDefinitionResponse> updateRole(@PathVariable("id") Long id,
                                                           @Valid @RequestBody RoleDefinitionRequest roleRequest,
                                                           Authentication authentication,
                                                           HttpServletRequest request) {
@@ -131,7 +130,7 @@ public class AdministrationController {
     @DeleteMapping("/roles/{id}")
     @Operation(summary = "Delete role")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_USERS')")
-    public ApiResponse<Void> deleteRole(@PathVariable("id") UUID id,
+    public ApiResponse<Void> deleteRole(@PathVariable("id") Long id,
                                         Authentication authentication,
                                         HttpServletRequest request) {
         RoleDefinitionResponse previous = administrationService.getRole(id);
@@ -164,7 +163,7 @@ public class AdministrationController {
     @PutMapping("/departments/{id}")
     @Operation(summary = "Update department")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<ReferenceDataResponse> updateDepartment(@PathVariable("id") UUID id,
+    public ApiResponse<ReferenceDataResponse> updateDepartment(@PathVariable("id") Long id,
                                                                @Valid @RequestBody ReferenceDataRequest dataRequest,
                                                                Authentication authentication,
                                                                HttpServletRequest request) {
@@ -177,7 +176,7 @@ public class AdministrationController {
     @DeleteMapping("/departments/{id}")
     @Operation(summary = "Delete department")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<Void> deleteDepartment(@PathVariable("id") UUID id,
+    public ApiResponse<Void> deleteDepartment(@PathVariable("id") Long id,
                                               Authentication authentication,
                                               HttpServletRequest request) {
         ReferenceDataResponse previous = administrationService.getReferenceData(id);
@@ -210,7 +209,7 @@ public class AdministrationController {
     @PutMapping("/branches/{id}")
     @Operation(summary = "Update branch")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<ReferenceDataResponse> updateBranch(@PathVariable("id") UUID id,
+    public ApiResponse<ReferenceDataResponse> updateBranch(@PathVariable("id") Long id,
                                                            @Valid @RequestBody ReferenceDataRequest dataRequest,
                                                            Authentication authentication,
                                                            HttpServletRequest request) {
@@ -223,7 +222,7 @@ public class AdministrationController {
     @DeleteMapping("/branches/{id}")
     @Operation(summary = "Delete branch")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<Void> deleteBranch(@PathVariable("id") UUID id,
+    public ApiResponse<Void> deleteBranch(@PathVariable("id") Long id,
                                           Authentication authentication,
                                           HttpServletRequest request) {
         ReferenceDataResponse previous = administrationService.getReferenceData(id);
@@ -256,7 +255,7 @@ public class AdministrationController {
     @PutMapping("/loss-categories/{id}")
     @Operation(summary = "Update loss category")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<ReferenceDataResponse> updateLossCategory(@PathVariable("id") UUID id,
+    public ApiResponse<ReferenceDataResponse> updateLossCategory(@PathVariable("id") Long id,
                                                                  @Valid @RequestBody ReferenceDataRequest dataRequest,
                                                                  Authentication authentication,
                                                                  HttpServletRequest request) {
@@ -269,7 +268,7 @@ public class AdministrationController {
     @DeleteMapping("/loss-categories/{id}")
     @Operation(summary = "Delete loss category")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<Void> deleteLossCategory(@PathVariable("id") UUID id,
+    public ApiResponse<Void> deleteLossCategory(@PathVariable("id") Long id,
                                                 Authentication authentication,
                                                 HttpServletRequest request) {
         ReferenceDataResponse previous = administrationService.getReferenceData(id);
@@ -302,7 +301,7 @@ public class AdministrationController {
     @PutMapping("/event-types/{id}")
     @Operation(summary = "Update event type")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<ReferenceDataResponse> updateEventType(@PathVariable("id") UUID id,
+    public ApiResponse<ReferenceDataResponse> updateEventType(@PathVariable("id") Long id,
                                                               @Valid @RequestBody ReferenceDataRequest dataRequest,
                                                               Authentication authentication,
                                                               HttpServletRequest request) {
@@ -315,7 +314,7 @@ public class AdministrationController {
     @DeleteMapping("/event-types/{id}")
     @Operation(summary = "Delete event type")
     @PreAuthorize("hasRole('SYSTEM_ADMIN') or hasAuthority('ADMIN_REFERENCE_DATA')")
-    public ApiResponse<Void> deleteEventType(@PathVariable("id") UUID id,
+    public ApiResponse<Void> deleteEventType(@PathVariable("id") Long id,
                                              Authentication authentication,
                                              HttpServletRequest request) {
         ReferenceDataResponse previous = administrationService.getReferenceData(id);

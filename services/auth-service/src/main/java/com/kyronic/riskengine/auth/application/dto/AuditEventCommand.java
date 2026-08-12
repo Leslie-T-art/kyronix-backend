@@ -1,7 +1,6 @@
 package com.kyronic.riskengine.auth.application.dto;
 
 import java.time.Instant;
-import java.util.UUID;
 
 public record AuditEventCommand(
         String eventType,
@@ -9,7 +8,7 @@ public record AuditEventCommand(
         String entityType,
         String entityId,
         String businessReference,
-        UUID userId,
+        Long userId,
         String username,
         String roles,
         String permissions,

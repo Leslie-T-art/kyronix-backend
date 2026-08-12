@@ -1,11 +1,10 @@
 package com.kyronic.riskengine.auth.application.dto;
 
 import java.util.Set;
-import java.util.UUID;
 
 public record AuthorizerCandidateResponse(
-        UUID userId,
-        UUID departmentId,
+        Long userId,
+        Long departmentId,
         Set<String> permissions,
         boolean active,
         boolean delegated

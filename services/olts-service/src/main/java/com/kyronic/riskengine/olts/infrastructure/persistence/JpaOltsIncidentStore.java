@@ -23,13 +23,18 @@ public class JpaOltsIncidentStore implements OltsIncidentStore {
 
     @Override
     public Optional<OltsIncident> findByIncidentId(String incidentId) {
-        return repository.findByIncidentIdAndDeletedFalse(incidentId).map(IncidentJpaEntity::toDomain);
+        return repository.findByIncidentId(incidentId).map(IncidentJpaEntity::toDomain);
     }
 
     @Override
-    public List<OltsIncident> findAllActive() {
-        return repository.findAllByDeletedFalseOrderByCreatedAtDesc().stream()
+    public List<OltsIncident> findAll() {
+        return repository.findAllByOrderByCreatedAtDesc().stream()
                 .map(IncidentJpaEntity::toDomain)
                 .toList();
+    }
+
+    @Override
+    public void delete(OltsIncident incident) {
+        repository.deleteById(incident.getId());
     }
 }

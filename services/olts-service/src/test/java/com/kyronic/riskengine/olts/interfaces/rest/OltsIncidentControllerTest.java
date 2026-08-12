@@ -23,14 +23,13 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class OltsIncidentControllerTest {
 
-    private static final UUID OPERATIONS_DEPARTMENT_ID = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-    private static final UUID HEAD_OFFICE_BRANCH_ID = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private static final Long OPERATIONS_DEPARTMENT_ID = 101L;
+    private static final Long HEAD_OFFICE_BRANCH_ID = 201L;
 
     private OltsIncidentController controller;
     private Jwt jwt;
@@ -44,7 +43,7 @@ class OltsIncidentControllerTest {
                 store,
                 new com.kyronic.riskengine.common.authorization.ServerSideAuthorizerResolver(),
                 new com.kyronic.riskengine.common.authorization.SegregationOfDutiesPolicy(),
-                (departmentId, permission) -> List.of(new AuthorizerCandidate(UUID.randomUUID(), departmentId, Set.of(permission), true, false, null, null, null)),
+                (departmentId, permission) -> List.of(new AuthorizerCandidate(1002L, departmentId, Set.of(permission), true, false, null, null, null)),
                 event -> {
                 },
                 code -> code,
@@ -52,7 +51,7 @@ class OltsIncidentControllerTest {
         );
         jwt = Jwt.withTokenValue("token")
                 .subject("risk.inputter")
-                .claim("userId", "11111111-1111-1111-1111-111111111111")
+                .claim("userId", "1001")
                 .header("alg", "HS256")
                 .build();
         validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -62,47 +61,88 @@ class OltsIncidentControllerTest {
     @Test
     void createsIncident() {
         CreateIncidentRequest request = new CreateIncidentRequest(
+                "System Outage",
+                11L,
                 LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 8, 3),
                 LocalDate.of(2026, 8, 2),
                 HEAD_OFFICE_BRANCH_ID,
                 OPERATIONS_DEPARTMENT_ID,
-                "INTERNAL_FRAUD",
-                "INCIDENT",
-                Severity.HIGH,
+                "Operations",
+                "Switching",
+                21L,
                 "System outage detected by branch operations",
-                "USD",
+                "Failover executed",
+                31L,
+                "Infrastructure instability",
+                41L,
+                true,
+                51L,
                 new BigDecimal("100.00"),
                 new BigDecimal("10.00"),
-                new BigDecimal("5.00")
+                61L,
+                "GL-100",
+                71L,
+                "Service outage",
+                "Branch operations impacted",
+                Severity.HIGH,
+                "Replace switch",
+                "risk.inputter",
+                LocalDate.of(2026, 8, 15),
+                81L,
+                true,
+                "evidence.docx",
+                LocalDate.of(2026, 8, 20),
+                "Awaiting validation"
         );
 
         ApiResponse<IncidentResponse> response = controller.create(request, jwt);
 
         assertThat(response.success()).isTrue();
-        assertThat(response.data().incidentId()).isEqualTo("OLTS-2026-00001");
-        assertThat(response.data().inputterUserId()).isEqualTo(UUID.fromString("11111111-1111-1111-1111-111111111111"));
-        assertThat(response.data().responsiblePersonId()).isEqualTo(UUID.fromString("11111111-1111-1111-1111-111111111111"));
-        assertThat(response.data().responsiblePersonName()).isEqualTo("risk.inputter");
+        assertThat(response.data().eventId()).isEqualTo("OLTS-2026-00001");
+        assertThat(response.data().reportedBy()).isEqualTo("risk.inputter");
+        assertThat(response.data().eventOwner()).isEqualTo("risk.inputter");
         assertThat(response.data().departmentName()).isEqualTo("Operations");
         assertThat(response.data().branchName()).isEqualTo("Head Office");
-        assertThat(response.data().netLoss()).isEqualByComparingTo("90.00");
+        assertThat(response.data().netLoss()).isEqualByComparingTo("110.00");
     }
 
     @Test
     void listsIncidents() {
         CreateIncidentRequest request = new CreateIncidentRequest(
+                "System Outage",
+                11L,
                 LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 8, 3),
                 LocalDate.of(2026, 8, 2),
                 HEAD_OFFICE_BRANCH_ID,
                 OPERATIONS_DEPARTMENT_ID,
-                "INTERNAL_FRAUD",
-                "INCIDENT",
-                Severity.HIGH,
+                "Operations",
+                "Switching",
+                21L,
                 "System outage detected by branch operations",
-                "USD",
+                "Failover executed",
+                31L,
+                "Infrastructure instability",
+                41L,
+                true,
+                51L,
                 new BigDecimal("100.00"),
                 new BigDecimal("10.00"),
-                new BigDecimal("5.00")
+                61L,
+                "GL-100",
+                71L,
+                "Service outage",
+                "Branch operations impacted",
+                Severity.HIGH,
+                "Replace switch",
+                "risk.inputter",
+                LocalDate.of(2026, 8, 15),
+                81L,
+                true,
+                "evidence.docx",
+                LocalDate.of(2026, 8, 20),
+                "Awaiting validation"
         );
 
         controller.create(request, jwt);
@@ -116,20 +156,41 @@ class OltsIncidentControllerTest {
     }
 
     @Test
-    void rejectsInvalidCurrencyCodeAtRequestBoundary() {
+    void rejectsBlankEventTitleAtRequestBoundary() {
         CreateIncidentRequest request = new CreateIncidentRequest(
+                " ",
+                11L,
                 LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 8, 3),
                 LocalDate.of(2026, 8, 2),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                "INTERNAL_FRAUD",
-                "INCIDENT",
-                Severity.HIGH,
+                999L,
+                888L,
+                "Operations",
+                "Switching",
+                21L,
                 "System outage detected by branch operations",
-                "string",
+                "Failover executed",
+                31L,
+                "Infrastructure instability",
+                41L,
+                true,
+                51L,
                 new BigDecimal("100.00"),
                 new BigDecimal("10.00"),
-                new BigDecimal("5.00")
+                61L,
+                "GL-100",
+                71L,
+                "Service outage",
+                "Branch operations impacted",
+                Severity.HIGH,
+                "Replace switch",
+                "risk.inputter",
+                LocalDate.of(2026, 8, 15),
+                81L,
+                true,
+                "evidence.docx",
+                LocalDate.of(2026, 8, 20),
+                "Awaiting validation"
         );
 
         assertThat(validator.validate(request)).isNotEmpty();
@@ -150,8 +211,13 @@ class OltsIncidentControllerTest {
         }
 
         @Override
-        public List<com.kyronic.riskengine.olts.domain.model.OltsIncident> findAllActive() {
-            return incident == null || incident.isDeleted() ? List.of() : List.of(incident);
+        public List<com.kyronic.riskengine.olts.domain.model.OltsIncident> findAll() {
+            return incident == null ? List.of() : List.of(incident);
+        }
+
+        @Override
+        public void delete(com.kyronic.riskengine.olts.domain.model.OltsIncident incident) {
+            this.incident = null;
         }
     }
 

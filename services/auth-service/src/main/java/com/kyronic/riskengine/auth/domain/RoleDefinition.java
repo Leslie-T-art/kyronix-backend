@@ -2,17 +2,18 @@ package com.kyronic.riskengine.auth.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "role_definitions")
 public class RoleDefinition {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, unique = true)
     private String code;
@@ -29,7 +30,7 @@ public class RoleDefinition {
     protected RoleDefinition() {
     }
 
-    public RoleDefinition(UUID id, String code, String name, String description, boolean active) {
+    public RoleDefinition(Long id, String code, String name, String description, boolean active) {
         this.id = id;
         this.code = code;
         this.name = name;
@@ -37,7 +38,7 @@ public class RoleDefinition {
         this.active = active;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 

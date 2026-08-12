@@ -2,15 +2,14 @@ package com.kyronic.riskengine.common.authorization;
 
 import java.time.Instant;
 import java.util.Set;
-import java.util.UUID;
 
 public record AuthorizerCandidate(
-        UUID userId,
-        UUID departmentId,
+        Long userId,
+        Long departmentId,
         Set<String> permissions,
         boolean active,
         boolean delegated,
-        UUID delegatedFromUserId,
+        Long delegatedFromUserId,
         Instant effectiveFrom,
         Instant effectiveTo
 ) {

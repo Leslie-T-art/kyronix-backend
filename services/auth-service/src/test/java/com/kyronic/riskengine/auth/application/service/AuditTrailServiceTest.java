@@ -10,7 +10,6 @@ import java.lang.reflect.Proxy;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -28,7 +27,7 @@ class AuditTrailServiceTest {
                 "AUTH_SESSION",
                 null,
                 null,
-                UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                111111L,
                 "risk.inputter",
                 "INPUTTER",
                 "OLTS_CREATE",
@@ -54,14 +53,14 @@ class AuditTrailServiceTest {
         List<AuditEvent> storedEvents = new ArrayList<>();
         storedEvents.add(
                 new AuditEvent(
-                        UUID.randomUUID(),
+                        1L,
                         "ADMIN_USER_CREATED",
                         "CREATE_USER",
                         "auth-service",
                         "USER_ACCOUNT",
                         "123",
                         "risk.inputter",
-                        UUID.fromString("33333333-3333-3333-3333-333333333333"),
+                        333333L,
                         "system.admin",
                         "SYSTEM_ADMIN",
                         "ADMIN_USERS",

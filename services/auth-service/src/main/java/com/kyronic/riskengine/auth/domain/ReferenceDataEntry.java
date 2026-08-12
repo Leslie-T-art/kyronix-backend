@@ -4,17 +4,18 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-
-import java.util.UUID;
 
 @Entity
 @Table(name = "reference_data_entries")
 public class ReferenceDataEntry {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -32,7 +33,7 @@ public class ReferenceDataEntry {
     protected ReferenceDataEntry() {
     }
 
-    public ReferenceDataEntry(UUID id, ReferenceDataType type, String code, String name, boolean active) {
+    public ReferenceDataEntry(Long id, ReferenceDataType type, String code, String name, boolean active) {
         this.id = id;
         this.type = type;
         this.code = code;
@@ -40,7 +41,7 @@ public class ReferenceDataEntry {
         this.active = active;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 

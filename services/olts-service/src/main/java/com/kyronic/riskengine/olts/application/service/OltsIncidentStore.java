@@ -11,5 +11,7 @@ public interface OltsIncidentStore {
 
     Optional<OltsIncident> findByIncidentId(String incidentId);
 
-    List<OltsIncident> findAllActive();
+    List<OltsIncident> findAll();
+
+    void delete(OltsIncident incident);
 }

@@ -15,8 +15,6 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,7 +55,7 @@ class KriServiceTest {
     }
 
     @Test
-    void deleteMarksKriAsDeleted() {
+    void deleteRemovesKri() {
         List<KriRecord> storedRecords = new ArrayList<>();
         storedRecords.add(existingRecord());
         KriRepository repository = repository(storedRecords);
@@ -68,8 +66,7 @@ class KriServiceTest {
 
         service.delete("KRI-2026-00001");
 
-        assertThat(storedRecords.get(0).isDeleted()).isTrue();
-        assertThat(storedRecords.get(0).getUpdatedBy()).isEqualTo("risk.inputter");
+        assertThat(storedRecords).isEmpty();
     }
 
     @Test
@@ -113,13 +110,16 @@ class KriServiceTest {
                         storedRecords.add(record);
                         yield record;
                     }
-                    case "findByKriIdAndDeletedFalse" -> storedRecords.stream()
+                    case "findByKriId" -> storedRecords.stream()
                             .filter(record -> record.getKriId().equals(args[0]))
-                            .filter(record -> !record.isDeleted())
                             .findFirst();
-                    case "findAllByDeletedFalse" -> storedRecords.stream()
-                            .filter(record -> !record.isDeleted())
+                    case "findAll" -> storedRecords.stream()
                             .toList();
+                    case "delete" -> {
+                        KriRecord record = (KriRecord) args[0];
+                        storedRecords.removeIf(existing -> existing.getId().equals(record.getId()));
+                        yield null;
+                    }
                     case "toString" -> "FakeKriRepository";
                     case "hashCode" -> System.identityHashCode(proxy);
                     case "equals" -> proxy == args[0];
@@ -157,7 +157,7 @@ class KriServiceTest {
 
     private KriRecord existingRecord() {
         return new KriRecord(
-                UUID.randomUUID(),
+                1L,
                 "KRI-2026-00001",
                 "Loan Default Ratio",
                 "Credit",
@@ -181,7 +181,6 @@ class KriServiceTest {
                 "system.admin",
                 Instant.parse("2026-08-01T10:00:00Z"),
                 "system.admin",
-                false,
                 0L
         );
     }

@@ -9,119 +9,267 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.UUID;
 
 public class OltsIncident {
 
     private final UUID id;
     private final String incidentId;
-    private final UUID departmentId;
-    private final UUID branchId;
-    private final UUID inputterUserId;
-    private final LocalDate incidentDate;
-    private final LocalDate discoveryDate;
-    private final String lossCategory;
-    private final String eventType;
-    private final Severity severity;
-    private final String description;
-    private final String currencyCode;
-    private final BigDecimal grossLoss;
-    private final BigDecimal recoveries;
-    private final BigDecimal potentialLoss;
-    private final UUID responsiblePersonId;
-    private final String responsiblePersonName;
-    private final Integer recordVersion;
-    private final boolean activeVersion;
+    private final Long inputterUserId;
+    private final Long createdBy;
     private final Instant createdAt;
-    private final UUID createdBy;
+
+    private String eventTitle;
+    private Long eventStatusId;
+    private LocalDate incidentDate;
+    private LocalDate incidentEndDate;
+    private LocalDate detectionDate;
+    private Long departmentId;
+    private Long branchId;
+    private String processName;
+    private String productService;
+    private Long baselEventCategoryId;
+    private String eventDescription;
+    private String immediateActionTaken;
+    private Long rootCauseCategoryId;
+    private String rootCauseDescription;
+    private Long controlId;
+    private Boolean failedMissingControl;
+    private Long currencyId;
+    private BigDecimal grossLoss;
+    private BigDecimal restitutionRemediationCost;
+    private Long recoveryMethodId;
+    private BigDecimal netLoss;
+    private String accountingGlReference;
+    private Long dataSourceId;
+    private String nonFinancialImpactType;
+    private String nonFinancialImpactDetails;
+    private Severity overallEventSeverity;
+    private String correctiveAction;
+    private String actionOwner;
+    private LocalDate actionTargetDate;
+    private Long actionStatusId;
+    private Boolean preventiveControlImplemented;
+    private String validationEvidence;
+    private LocalDate closureValidationDate;
+    private String closureComment;
+    private Integer recordVersion;
     private AuthorizationStatus authorizationStatus;
     private IncidentStatus status;
-    private BigDecimal netLoss;
-    private UUID submittedBy;
+    private String eventOwner;
+    private String reportedBy;
+    private String createdByUsername;
+    private String lastUpdatedByUsername;
+    private Long submittedBy;
     private Instant submittedAt;
-    private UUID authorizedBy;
+    private Long authorizedBy;
     private Instant authorizedAt;
-    private UUID lastModifiedBy;
+    private Long lastModifiedBy;
     private Instant updatedAt;
-    private boolean deleted;
-    private UUID deletedBy;
-    private Instant deletedAt;
 
-    private OltsIncident(UUID id, String incidentId, UUID departmentId, UUID branchId, UUID inputterUserId,
-                         LocalDate incidentDate, LocalDate discoveryDate, String lossCategory,
-                         String eventType, Severity severity, String description, String currencyCode,
-                         BigDecimal grossLoss, BigDecimal recoveries, BigDecimal potentialLoss,
-                         UUID responsiblePersonId, String responsiblePersonName, Integer recordVersion,
-                         boolean activeVersion, Instant createdAt, UUID createdBy) {
+    private OltsIncident(UUID id,
+                         String incidentId,
+                         Long inputterUserId,
+                         Long createdBy,
+                         Instant createdAt) {
         this.id = id;
         this.incidentId = incidentId;
-        this.departmentId = departmentId;
-        this.branchId = branchId;
         this.inputterUserId = inputterUserId;
-        this.incidentDate = incidentDate;
-        this.discoveryDate = discoveryDate;
-        this.lossCategory = lossCategory;
-        this.eventType = eventType;
-        this.severity = severity;
-        this.description = description;
-        this.currencyCode = currencyCode;
-        this.grossLoss = grossLoss;
-        this.recoveries = recoveries;
-        this.potentialLoss = potentialLoss;
-        this.responsiblePersonId = responsiblePersonId;
-        this.responsiblePersonName = responsiblePersonName;
-        this.recordVersion = recordVersion;
-        this.activeVersion = activeVersion;
-        this.createdAt = createdAt;
         this.createdBy = createdBy;
+        this.createdAt = createdAt;
+    }
+
+    public static OltsIncident create(String incidentId,
+                                      Long inputterUserId,
+                                      String actorUsername,
+                                      Long eventStatusId,
+                                      LocalDate incidentDate,
+                                      LocalDate incidentEndDate,
+                                      LocalDate detectionDate,
+                                      Long departmentId,
+                                      Long branchId,
+                                      String eventTitle,
+                                      String processName,
+                                      String productService,
+                                      Long baselEventCategoryId,
+                                      String eventDescription,
+                                      String immediateActionTaken,
+                                      Long rootCauseCategoryId,
+                                      String rootCauseDescription,
+                                      Long controlId,
+                                      Boolean failedMissingControl,
+                                      Long currencyId,
+                                      BigDecimal grossLoss,
+                                      BigDecimal restitutionRemediationCost,
+                                      Long recoveryMethodId,
+                                      String accountingGlReference,
+                                      Long dataSourceId,
+                                      String nonFinancialImpactType,
+                                      String nonFinancialImpactDetails,
+                                      Severity overallEventSeverity,
+                                      String correctiveAction,
+                                      String actionOwner,
+                                      LocalDate actionTargetDate,
+                                      Long actionStatusId,
+                                      Boolean preventiveControlImplemented,
+                                      String validationEvidence,
+                                      LocalDate closureValidationDate,
+                                      String closureComment,
+                                      Instant now) {
+        validate(incidentDate, incidentEndDate, detectionDate, grossLoss, restitutionRemediationCost, actionTargetDate, closureValidationDate);
+        OltsIncident incident = new OltsIncident(UUID.randomUUID(), incidentId, inputterUserId, inputterUserId, now);
+        incident.applyEditableFields(
+                eventTitle,
+                eventStatusId,
+                incidentDate,
+                incidentEndDate,
+                detectionDate,
+                departmentId,
+                branchId,
+                processName,
+                productService,
+                baselEventCategoryId,
+                eventDescription,
+                immediateActionTaken,
+                rootCauseCategoryId,
+                rootCauseDescription,
+                controlId,
+                failedMissingControl,
+                currencyId,
+                grossLoss,
+                restitutionRemediationCost,
+                recoveryMethodId,
+                accountingGlReference,
+                dataSourceId,
+                nonFinancialImpactType,
+                nonFinancialImpactDetails,
+                overallEventSeverity,
+                correctiveAction,
+                actionOwner,
+                actionTargetDate,
+                actionStatusId,
+                preventiveControlImplemented,
+                validationEvidence,
+                closureValidationDate,
+                closureComment
+        );
+        incident.recordVersion = 1;
+        incident.authorizationStatus = AuthorizationStatus.DRAFT;
+        incident.status = IncidentStatus.DRAFT;
+        incident.eventOwner = firstNonBlank(actionOwner, actorUsername);
+        incident.reportedBy = actorUsername;
+        incident.createdByUsername = actorUsername;
+        incident.lastUpdatedByUsername = actorUsername;
+        incident.lastModifiedBy = inputterUserId;
+        incident.updatedAt = now;
+        return incident;
+    }
+
+    public void updateDraft(Long actorUserId,
+                            String actorUsername,
+                            String eventTitle,
+                            Long eventStatusId,
+                            LocalDate incidentDate,
+                            LocalDate incidentEndDate,
+                            LocalDate detectionDate,
+                            Long departmentId,
+                            Long branchId,
+                            String processName,
+                            String productService,
+                            Long baselEventCategoryId,
+                            String eventDescription,
+                            String immediateActionTaken,
+                            Long rootCauseCategoryId,
+                            String rootCauseDescription,
+                            Long controlId,
+                            Boolean failedMissingControl,
+                            Long currencyId,
+                            BigDecimal grossLoss,
+                            BigDecimal restitutionRemediationCost,
+                            Long recoveryMethodId,
+                            String accountingGlReference,
+                            Long dataSourceId,
+                            String nonFinancialImpactType,
+                            String nonFinancialImpactDetails,
+                            Severity overallEventSeverity,
+                            String correctiveAction,
+                            String actionOwner,
+                            LocalDate actionTargetDate,
+                            Long actionStatusId,
+                            Boolean preventiveControlImplemented,
+                            String validationEvidence,
+                            LocalDate closureValidationDate,
+                            String closureComment,
+                            Instant timestamp) {
+        if (authorizationStatus != AuthorizationStatus.DRAFT && authorizationStatus != AuthorizationStatus.RETURNED_FOR_CORRECTION) {
+            throw new AuthorizationException("Only draft or returned incidents may be updated", ErrorCodes.INVALID_WORKFLOW_TRANSITION);
+        }
+        validate(incidentDate, incidentEndDate, detectionDate, grossLoss, restitutionRemediationCost, actionTargetDate, closureValidationDate);
+        applyEditableFields(
+                eventTitle,
+                eventStatusId,
+                incidentDate,
+                incidentEndDate,
+                detectionDate,
+                departmentId,
+                branchId,
+                processName,
+                productService,
+                baselEventCategoryId,
+                eventDescription,
+                immediateActionTaken,
+                rootCauseCategoryId,
+                rootCauseDescription,
+                controlId,
+                failedMissingControl,
+                currencyId,
+                grossLoss,
+                restitutionRemediationCost,
+                recoveryMethodId,
+                accountingGlReference,
+                dataSourceId,
+                nonFinancialImpactType,
+                nonFinancialImpactDetails,
+                overallEventSeverity,
+                correctiveAction,
+                actionOwner,
+                actionTargetDate,
+                actionStatusId,
+                preventiveControlImplemented,
+                validationEvidence,
+                closureValidationDate,
+                closureComment
+        );
+        this.recordVersion = this.recordVersion + 1;
+        this.eventOwner = firstNonBlank(actionOwner, this.eventOwner, actorUsername);
+        this.lastModifiedBy = actorUserId;
+        this.lastUpdatedByUsername = actorUsername;
+        this.updatedAt = timestamp;
         this.authorizationStatus = AuthorizationStatus.DRAFT;
         this.status = IncidentStatus.DRAFT;
-        this.lastModifiedBy = createdBy;
-        this.updatedAt = createdAt;
-        this.netLoss = calculateNetLoss(grossLoss, recoveries);
-        this.deleted = false;
     }
 
-    public static OltsIncident create(String incidentId, UUID departmentId, UUID branchId, UUID inputterUserId,
-                                      LocalDate incidentDate, LocalDate discoveryDate, String lossCategory,
-                                      String eventType, Severity severity, String description, String currencyCode,
-                                      BigDecimal grossLoss, BigDecimal recoveries, BigDecimal potentialLoss,
-                                      UUID responsiblePersonId, String responsiblePersonName, Instant now) {
-        validateDates(incidentDate, discoveryDate);
-        validateAmounts(grossLoss, recoveries, potentialLoss);
-        validateCurrencyCode(currencyCode);
-        Objects.requireNonNull(description, "description is required");
-        Objects.requireNonNull(responsiblePersonId, "responsiblePersonId is required");
-        if (description.isBlank()) {
-            throw new IllegalArgumentException("description is required");
-        }
-        return new OltsIncident(UUID.randomUUID(), incidentId, departmentId, branchId, inputterUserId, incidentDate, discoveryDate,
-                lossCategory, eventType, severity, description, currencyCode, grossLoss, recoveries, potentialLoss,
-                responsiblePersonId, responsiblePersonName, 1, true, now, inputterUserId);
-    }
-
-    public void submit(UUID actorUserId, Instant submittedAt) {
+    public void submit(Long actorUserId, Instant timestamp) {
         if (authorizationStatus != AuthorizationStatus.DRAFT && authorizationStatus != AuthorizationStatus.RETURNED_FOR_CORRECTION) {
             throw new AuthorizationException("Only draft or returned incidents may be submitted", ErrorCodes.INVALID_WORKFLOW_TRANSITION);
         }
         this.authorizationStatus = AuthorizationStatus.PENDING_AUTHORIZATION;
         this.submittedBy = actorUserId;
-        this.submittedAt = submittedAt;
+        this.submittedAt = timestamp;
         this.lastModifiedBy = actorUserId;
-        this.updatedAt = submittedAt;
+        this.updatedAt = timestamp;
     }
 
-    public void beginAuthorizationReview(UUID actorUserId, Instant reviewedAt) {
+    public void beginAuthorizationReview(Long actorUserId, Instant timestamp) {
         if (authorizationStatus != AuthorizationStatus.PENDING_AUTHORIZATION) {
             throw new AuthorizationException("Incident is not pending authorization", ErrorCodes.INVALID_WORKFLOW_TRANSITION);
         }
         this.authorizationStatus = AuthorizationStatus.UNDER_AUTHORIZATION_REVIEW;
         this.lastModifiedBy = actorUserId;
-        this.updatedAt = reviewedAt;
+        this.updatedAt = timestamp;
     }
 
-    public void authorize(UUID authorizerUserId, Instant authorizedAt, SegregationOfDutiesPolicy policy) {
+    public void authorize(Long authorizerUserId, Instant timestamp, SegregationOfDutiesPolicy policy) {
         if (authorizationStatus != AuthorizationStatus.UNDER_AUTHORIZATION_REVIEW) {
             throw new AuthorizationException("Incident is not under authorization review", ErrorCodes.INVALID_WORKFLOW_TRANSITION);
         }
@@ -129,12 +277,12 @@ public class OltsIncident {
         this.authorizationStatus = AuthorizationStatus.AUTHORIZED;
         this.status = IncidentStatus.AUTHORIZED;
         this.authorizedBy = authorizerUserId;
-        this.authorizedAt = authorizedAt;
+        this.authorizedAt = timestamp;
         this.lastModifiedBy = authorizerUserId;
-        this.updatedAt = authorizedAt;
+        this.updatedAt = timestamp;
     }
 
-    public void reject(UUID authorizerUserId, String reason, Instant rejectedAt, SegregationOfDutiesPolicy policy) {
+    public void reject(Long authorizerUserId, String reason, Instant timestamp, SegregationOfDutiesPolicy policy) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("rejection reason is required");
         }
@@ -144,10 +292,10 @@ public class OltsIncident {
         policy.validate(inputterUserId, lastModifiedBy, authorizerUserId);
         this.authorizationStatus = AuthorizationStatus.REJECTED;
         this.lastModifiedBy = authorizerUserId;
-        this.updatedAt = rejectedAt;
+        this.updatedAt = timestamp;
     }
 
-    public void returnForCorrection(UUID authorizerUserId, String reason, Instant returnedAt, SegregationOfDutiesPolicy policy) {
+    public void returnForCorrection(Long authorizerUserId, String reason, Instant timestamp, SegregationOfDutiesPolicy policy) {
         if (reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("return reason is required");
         }
@@ -157,309 +305,292 @@ public class OltsIncident {
         policy.validate(inputterUserId, lastModifiedBy, authorizerUserId);
         this.authorizationStatus = AuthorizationStatus.RETURNED_FOR_CORRECTION;
         this.lastModifiedBy = authorizerUserId;
-        this.updatedAt = returnedAt;
-    }
-
-    public void updateDraft(UUID actorUserId,
-                            UUID departmentId,
-                            UUID branchId,
-                            LocalDate incidentDate,
-                            LocalDate discoveryDate,
-                            String lossCategory,
-                            String eventType,
-                            Severity severity,
-                            String description,
-                            String currencyCode,
-                            BigDecimal grossLoss,
-                            BigDecimal recoveries,
-                            BigDecimal potentialLoss,
-                            UUID responsiblePersonId,
-                            String responsiblePersonName,
-                            Instant updatedAt) {
-        if (authorizationStatus != AuthorizationStatus.DRAFT && authorizationStatus != AuthorizationStatus.RETURNED_FOR_CORRECTION) {
-            throw new AuthorizationException("Only draft or returned incidents may be updated", ErrorCodes.INVALID_WORKFLOW_TRANSITION);
-        }
-        validateDates(incidentDate, discoveryDate);
-        validateAmounts(grossLoss, recoveries, potentialLoss);
-        validateCurrencyCode(currencyCode);
-        if (description == null || description.isBlank()) {
-            throw new IllegalArgumentException("description is required");
-        }
-        this.lastModifiedBy = actorUserId;
-        this.updatedAt = updatedAt;
-        this.authorizationStatus = AuthorizationStatus.DRAFT;
-        this.status = IncidentStatus.DRAFT;
-        setMutableFields(departmentId, branchId, incidentDate, discoveryDate, lossCategory, eventType, severity, description,
-                currencyCode, grossLoss, recoveries, potentialLoss, responsiblePersonId, responsiblePersonName);
-    }
-
-    public void markDeleted(UUID actorUserId, Instant deletedAt) {
-        if (authorizationStatus == AuthorizationStatus.PENDING_AUTHORIZATION || authorizationStatus == AuthorizationStatus.UNDER_AUTHORIZATION_REVIEW) {
-            throw new AuthorizationException("Pending incidents cannot be deleted", ErrorCodes.INVALID_WORKFLOW_TRANSITION);
-        }
-        if (authorizationStatus == AuthorizationStatus.AUTHORIZED) {
-            throw new AuthorizationException("Authorized incidents require amendment or archive workflow", ErrorCodes.INVALID_WORKFLOW_TRANSITION);
-        }
-        this.deleted = true;
-        this.deletedBy = actorUserId;
-        this.deletedAt = deletedAt;
-        this.lastModifiedBy = actorUserId;
-        this.updatedAt = deletedAt;
+        this.updatedAt = timestamp;
     }
 
     public static OltsIncident rehydrate(UUID id,
                                          String incidentId,
-                                         UUID departmentId,
-                                         UUID branchId,
-                                         UUID inputterUserId,
-                                         LocalDate incidentDate,
-                                         LocalDate discoveryDate,
-                                         String lossCategory,
-                                         String eventType,
-                                         Severity severity,
-                                         String description,
-                                         String currencyCode,
-                                         BigDecimal grossLoss,
-                                         BigDecimal recoveries,
-                                         BigDecimal potentialLoss,
-                                         UUID responsiblePersonId,
-                                         String responsiblePersonName,
-                                         Integer recordVersion,
-                                         boolean activeVersion,
+                                         Long inputterUserId,
+                                         Long createdBy,
                                          Instant createdAt,
-                                         UUID createdBy,
+                                         String eventTitle,
+                                         Long eventStatusId,
+                                         LocalDate incidentDate,
+                                         LocalDate incidentEndDate,
+                                         LocalDate detectionDate,
+                                         Long departmentId,
+                                         Long branchId,
+                                         String processName,
+                                         String productService,
+                                         Long baselEventCategoryId,
+                                         String eventDescription,
+                                         String immediateActionTaken,
+                                         Long rootCauseCategoryId,
+                                         String rootCauseDescription,
+                                         Long controlId,
+                                         Boolean failedMissingControl,
+                                         Long currencyId,
+                                         BigDecimal grossLoss,
+                                         BigDecimal restitutionRemediationCost,
+                                         Long recoveryMethodId,
+                                         BigDecimal netLoss,
+                                         String accountingGlReference,
+                                         Long dataSourceId,
+                                         String nonFinancialImpactType,
+                                         String nonFinancialImpactDetails,
+                                         Severity overallEventSeverity,
+                                         String correctiveAction,
+                                         String actionOwner,
+                                         LocalDate actionTargetDate,
+                                         Long actionStatusId,
+                                         Boolean preventiveControlImplemented,
+                                         String validationEvidence,
+                                         LocalDate closureValidationDate,
+                                         String closureComment,
+                                         Integer recordVersion,
                                          AuthorizationStatus authorizationStatus,
                                          IncidentStatus status,
-                                         BigDecimal netLoss,
-                                         UUID submittedBy,
+                                         String eventOwner,
+                                         String reportedBy,
+                                         String createdByUsername,
+                                         String lastUpdatedByUsername,
+                                         Long submittedBy,
                                          Instant submittedAt,
-                                         UUID authorizedBy,
+                                         Long authorizedBy,
                                          Instant authorizedAt,
-                                         UUID lastModifiedBy,
-                                         Instant updatedAt,
-                                         boolean deleted,
-                                         UUID deletedBy,
-                                         Instant deletedAt) {
-        OltsIncident incident = new OltsIncident(id, incidentId, departmentId, branchId, inputterUserId, incidentDate, discoveryDate,
-                lossCategory, eventType, severity, description, currencyCode, grossLoss, recoveries, potentialLoss,
-                responsiblePersonId, responsiblePersonName, recordVersion, activeVersion, createdAt, createdBy);
+                                         Long lastModifiedBy,
+                                         Instant updatedAt) {
+        OltsIncident incident = new OltsIncident(id, incidentId, inputterUserId, createdBy, createdAt);
+        incident.eventTitle = eventTitle;
+        incident.eventStatusId = eventStatusId;
+        incident.incidentDate = incidentDate;
+        incident.incidentEndDate = incidentEndDate;
+        incident.detectionDate = detectionDate;
+        incident.departmentId = departmentId;
+        incident.branchId = branchId;
+        incident.processName = processName;
+        incident.productService = productService;
+        incident.baselEventCategoryId = baselEventCategoryId;
+        incident.eventDescription = eventDescription;
+        incident.immediateActionTaken = immediateActionTaken;
+        incident.rootCauseCategoryId = rootCauseCategoryId;
+        incident.rootCauseDescription = rootCauseDescription;
+        incident.controlId = controlId;
+        incident.failedMissingControl = failedMissingControl;
+        incident.currencyId = currencyId;
+        incident.grossLoss = grossLoss;
+        incident.restitutionRemediationCost = restitutionRemediationCost;
+        incident.recoveryMethodId = recoveryMethodId;
+        incident.netLoss = netLoss;
+        incident.accountingGlReference = accountingGlReference;
+        incident.dataSourceId = dataSourceId;
+        incident.nonFinancialImpactType = nonFinancialImpactType;
+        incident.nonFinancialImpactDetails = nonFinancialImpactDetails;
+        incident.overallEventSeverity = overallEventSeverity;
+        incident.correctiveAction = correctiveAction;
+        incident.actionOwner = actionOwner;
+        incident.actionTargetDate = actionTargetDate;
+        incident.actionStatusId = actionStatusId;
+        incident.preventiveControlImplemented = preventiveControlImplemented;
+        incident.validationEvidence = validationEvidence;
+        incident.closureValidationDate = closureValidationDate;
+        incident.closureComment = closureComment;
+        incident.recordVersion = recordVersion;
         incident.authorizationStatus = authorizationStatus;
         incident.status = status;
-        incident.netLoss = netLoss;
+        incident.eventOwner = eventOwner;
+        incident.reportedBy = reportedBy;
+        incident.createdByUsername = createdByUsername;
+        incident.lastUpdatedByUsername = lastUpdatedByUsername;
         incident.submittedBy = submittedBy;
         incident.submittedAt = submittedAt;
         incident.authorizedBy = authorizedBy;
         incident.authorizedAt = authorizedAt;
         incident.lastModifiedBy = lastModifiedBy;
         incident.updatedAt = updatedAt;
-        incident.deleted = deleted;
-        incident.deletedBy = deletedBy;
-        incident.deletedAt = deletedAt;
         return incident;
     }
 
-    public static BigDecimal calculateNetLoss(BigDecimal grossLoss, BigDecimal recoveries) {
-        validateAmounts(grossLoss, recoveries, BigDecimal.ZERO);
-        return grossLoss.subtract(recoveries).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static void validateDates(LocalDate incidentDate, LocalDate discoveryDate) {
-        if (incidentDate == null || discoveryDate == null) {
-            throw new IllegalArgumentException("incidentDate and discoveryDate are required");
+    public static BigDecimal calculateNetLoss(BigDecimal grossLoss, BigDecimal restitutionRemediationCost) {
+        if (grossLoss == null || restitutionRemediationCost == null) {
+            throw new IllegalArgumentException("financial amounts are required");
         }
-        if (discoveryDate.isBefore(incidentDate)) {
-            throw new IllegalArgumentException("discoveryDate cannot precede incidentDate");
-        }
-        if (incidentDate.isAfter(LocalDate.of(2026, 8, 5).plusDays(1))) {
-            throw new IllegalArgumentException("incidentDate cannot be unreasonably in the future");
-        }
-    }
-
-    private static void validateAmounts(BigDecimal grossLoss, BigDecimal recoveries, BigDecimal potentialLoss) {
-        if (grossLoss.signum() < 0 || recoveries.signum() < 0 || potentialLoss.signum() < 0) {
+        if (grossLoss.signum() < 0 || restitutionRemediationCost.signum() < 0) {
             throw new IllegalArgumentException("financial amounts cannot be negative");
         }
-        if (recoveries.compareTo(grossLoss) > 0) {
-            throw new IllegalArgumentException("recoveries cannot exceed grossLoss");
+        return grossLoss.add(restitutionRemediationCost).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private void applyEditableFields(String eventTitle,
+                                     Long eventStatusId,
+                                     LocalDate incidentDate,
+                                     LocalDate incidentEndDate,
+                                     LocalDate detectionDate,
+                                     Long departmentId,
+                                     Long branchId,
+                                     String processName,
+                                     String productService,
+                                     Long baselEventCategoryId,
+                                     String eventDescription,
+                                     String immediateActionTaken,
+                                     Long rootCauseCategoryId,
+                                     String rootCauseDescription,
+                                     Long controlId,
+                                     Boolean failedMissingControl,
+                                     Long currencyId,
+                                     BigDecimal grossLoss,
+                                     BigDecimal restitutionRemediationCost,
+                                     Long recoveryMethodId,
+                                     String accountingGlReference,
+                                     Long dataSourceId,
+                                     String nonFinancialImpactType,
+                                     String nonFinancialImpactDetails,
+                                     Severity overallEventSeverity,
+                                     String correctiveAction,
+                                     String actionOwner,
+                                     LocalDate actionTargetDate,
+                                     Long actionStatusId,
+                                     Boolean preventiveControlImplemented,
+                                     String validationEvidence,
+                                     LocalDate closureValidationDate,
+                                     String closureComment) {
+        this.eventTitle = requireText(eventTitle, "eventTitle");
+        this.eventStatusId = eventStatusId;
+        this.incidentDate = incidentDate;
+        this.incidentEndDate = incidentEndDate;
+        this.detectionDate = detectionDate;
+        this.departmentId = departmentId;
+        this.branchId = branchId;
+        this.processName = requireText(processName, "processName");
+        this.productService = requireText(productService, "productService");
+        this.baselEventCategoryId = baselEventCategoryId;
+        this.eventDescription = requireText(eventDescription, "eventDescription");
+        this.immediateActionTaken = trimToNull(immediateActionTaken);
+        this.rootCauseCategoryId = rootCauseCategoryId;
+        this.rootCauseDescription = trimToNull(rootCauseDescription);
+        this.controlId = controlId;
+        this.failedMissingControl = failedMissingControl;
+        this.currencyId = currencyId;
+        this.grossLoss = grossLoss.setScale(2, RoundingMode.HALF_UP);
+        this.restitutionRemediationCost = restitutionRemediationCost.setScale(2, RoundingMode.HALF_UP);
+        this.recoveryMethodId = recoveryMethodId;
+        this.netLoss = calculateNetLoss(grossLoss, restitutionRemediationCost);
+        this.accountingGlReference = trimToNull(accountingGlReference);
+        this.dataSourceId = dataSourceId;
+        this.nonFinancialImpactType = trimToNull(nonFinancialImpactType);
+        this.nonFinancialImpactDetails = trimToNull(nonFinancialImpactDetails);
+        this.overallEventSeverity = overallEventSeverity;
+        this.correctiveAction = trimToNull(correctiveAction);
+        this.actionOwner = trimToNull(actionOwner);
+        this.actionTargetDate = actionTargetDate;
+        this.actionStatusId = actionStatusId;
+        this.preventiveControlImplemented = preventiveControlImplemented;
+        this.validationEvidence = trimToNull(validationEvidence);
+        this.closureValidationDate = closureValidationDate;
+        this.closureComment = trimToNull(closureComment);
+    }
+
+    private static void validate(LocalDate incidentDate,
+                                 LocalDate incidentEndDate,
+                                 LocalDate detectionDate,
+                                 BigDecimal grossLoss,
+                                 BigDecimal restitutionRemediationCost,
+                                 LocalDate actionTargetDate,
+                                 LocalDate closureValidationDate) {
+        if (incidentDate == null || detectionDate == null) {
+            throw new IllegalArgumentException("incidentDate and detectionDate are required");
+        }
+        if (incidentEndDate != null && incidentEndDate.isBefore(incidentDate)) {
+            throw new IllegalArgumentException("incidentEndDate must be on or after incidentDate");
+        }
+        if (detectionDate.isBefore(incidentDate)) {
+            throw new IllegalArgumentException("detectionDate must be on or after incidentDate");
+        }
+        if (closureValidationDate != null && actionTargetDate != null && closureValidationDate.isBefore(incidentDate)) {
+            throw new IllegalArgumentException("closureValidationDate must be valid");
+        }
+        if (grossLoss == null || restitutionRemediationCost == null) {
+            throw new IllegalArgumentException("financial amounts are required");
+        }
+        if (grossLoss.signum() < 0 || restitutionRemediationCost.signum() < 0) {
+            throw new IllegalArgumentException("financial amounts cannot be negative");
         }
     }
 
-    private static void validateCurrencyCode(String currencyCode) {
-        if (currencyCode == null || !currencyCode.matches("^[A-Z]{3}$")) {
-            throw new IllegalArgumentException("currencyCode must be a valid 3-letter ISO code");
+    private static String requireText(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " is required");
         }
+        return value.trim();
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public String getIncidentId() {
-        return incidentId;
-    }
-
-    public UUID getDepartmentId() {
-        return departmentId;
-    }
-
-    public UUID getBranchId() {
-        return branchId;
-    }
-
-    public UUID getInputterUserId() {
-        return inputterUserId;
-    }
-
-    public LocalDate getIncidentDate() {
-        return incidentDate;
-    }
-
-    public LocalDate getDiscoveryDate() {
-        return discoveryDate;
-    }
-
-    public String getLossCategory() {
-        return lossCategory;
-    }
-
-    public String getEventType() {
-        return eventType;
-    }
-
-    public Severity getSeverity() {
-        return severity;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getCurrencyCode() {
-        return currencyCode;
-    }
-
-    public BigDecimal getGrossLoss() {
-        return grossLoss;
-    }
-
-    public BigDecimal getRecoveries() {
-        return recoveries;
-    }
-
-    public BigDecimal getNetLoss() {
-        return netLoss;
-    }
-
-    public BigDecimal getPotentialLoss() {
-        return potentialLoss;
-    }
-
-    public UUID getResponsiblePersonId() {
-        return responsiblePersonId;
-    }
-
-    public String getResponsiblePersonName() {
-        return responsiblePersonName;
-    }
-
-    public Integer getRecordVersion() {
-        return recordVersion;
-    }
-
-    public boolean isActiveVersion() {
-        return activeVersion;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public UUID getCreatedBy() {
-        return createdBy;
-    }
-
-    public AuthorizationStatus getAuthorizationStatus() {
-        return authorizationStatus;
-    }
-
-    public IncidentStatus getStatus() {
-        return status;
-    }
-
-    public UUID getSubmittedBy() {
-        return submittedBy;
-    }
-
-    public Instant getSubmittedAt() {
-        return submittedAt;
-    }
-
-    public UUID getAuthorizedBy() {
-        return authorizedBy;
-    }
-
-    public Instant getAuthorizedAt() {
-        return authorizedAt;
-    }
-
-    public UUID getLastModifiedBy() {
-        return lastModifiedBy;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public UUID getDeletedBy() {
-        return deletedBy;
-    }
-
-    public Instant getDeletedAt() {
-        return deletedAt;
-    }
-
-    private void setMutableFields(UUID departmentId,
-                                  UUID branchId,
-                                  LocalDate incidentDate,
-                                  LocalDate discoveryDate,
-                                  String lossCategory,
-                                  String eventType,
-                                  Severity severity,
-                                  String description,
-                                  String currencyCode,
-                                  BigDecimal grossLoss,
-                                  BigDecimal recoveries,
-                                  BigDecimal potentialLoss,
-                                  UUID responsiblePersonId,
-                                  String responsiblePersonName) {
-        trySetField("departmentId", departmentId);
-        trySetField("branchId", branchId);
-        trySetField("incidentDate", incidentDate);
-        trySetField("discoveryDate", discoveryDate);
-        trySetField("lossCategory", lossCategory);
-        trySetField("eventType", eventType);
-        trySetField("severity", severity);
-        trySetField("description", description);
-        trySetField("currencyCode", currencyCode);
-        trySetField("grossLoss", grossLoss);
-        trySetField("recoveries", recoveries);
-        trySetField("potentialLoss", potentialLoss);
-        trySetField("responsiblePersonId", responsiblePersonId);
-        trySetField("responsiblePersonName", responsiblePersonName);
-        this.netLoss = calculateNetLoss(grossLoss, recoveries);
-    }
-
-    private void trySetField(String fieldName, Object value) {
-        try {
-            java.lang.reflect.Field field = OltsIncident.class.getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(this, value);
-        } catch (ReflectiveOperationException exception) {
-            throw new IllegalStateException("Unable to update incident field " + fieldName, exception);
+    private static String trimToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
         }
+        return value.trim();
     }
+
+    private static String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return null;
+    }
+
+    public UUID getId() { return id; }
+    public String getIncidentId() { return incidentId; }
+    public String getEventId() { return incidentId; }
+    public Long getInputterUserId() { return inputterUserId; }
+    public Long getCreatedBy() { return createdBy; }
+    public Instant getCreatedAt() { return createdAt; }
+    public String getEventTitle() { return eventTitle; }
+    public Long getEventStatusId() { return eventStatusId; }
+    public LocalDate getIncidentDate() { return incidentDate; }
+    public LocalDate getIncidentEndDate() { return incidentEndDate; }
+    public LocalDate getDetectionDate() { return detectionDate; }
+    public Long getDepartmentId() { return departmentId; }
+    public Long getBranchId() { return branchId; }
+    public String getProcessName() { return processName; }
+    public String getProductService() { return productService; }
+    public Long getBaselEventCategoryId() { return baselEventCategoryId; }
+    public String getEventDescription() { return eventDescription; }
+    public String getImmediateActionTaken() { return immediateActionTaken; }
+    public Long getRootCauseCategoryId() { return rootCauseCategoryId; }
+    public String getRootCauseDescription() { return rootCauseDescription; }
+    public Long getControlId() { return controlId; }
+    public Boolean getFailedMissingControl() { return failedMissingControl; }
+    public Long getCurrencyId() { return currencyId; }
+    public BigDecimal getGrossLoss() { return grossLoss; }
+    public BigDecimal getRestitutionRemediationCost() { return restitutionRemediationCost; }
+    public Long getRecoveryMethodId() { return recoveryMethodId; }
+    public BigDecimal getNetLoss() { return netLoss; }
+    public String getAccountingGlReference() { return accountingGlReference; }
+    public Long getDataSourceId() { return dataSourceId; }
+    public String getNonFinancialImpactType() { return nonFinancialImpactType; }
+    public String getNonFinancialImpactDetails() { return nonFinancialImpactDetails; }
+    public Severity getOverallEventSeverity() { return overallEventSeverity; }
+    public String getCorrectiveAction() { return correctiveAction; }
+    public String getActionOwner() { return actionOwner; }
+    public LocalDate getActionTargetDate() { return actionTargetDate; }
+    public Long getActionStatusId() { return actionStatusId; }
+    public Boolean getPreventiveControlImplemented() { return preventiveControlImplemented; }
+    public String getValidationEvidence() { return validationEvidence; }
+    public LocalDate getClosureValidationDate() { return closureValidationDate; }
+    public String getClosureComment() { return closureComment; }
+    public Integer getRecordVersion() { return recordVersion; }
+    public AuthorizationStatus getAuthorizationStatus() { return authorizationStatus; }
+    public IncidentStatus getStatus() { return status; }
+    public String getEventOwner() { return eventOwner; }
+    public String getReportedBy() { return reportedBy; }
+    public String getCreatedByUsername() { return createdByUsername; }
+    public String getLastUpdatedByUsername() { return lastUpdatedByUsername; }
+    public Long getSubmittedBy() { return submittedBy; }
+    public Instant getSubmittedAt() { return submittedAt; }
+    public Long getAuthorizedBy() { return authorizedBy; }
+    public Instant getAuthorizedAt() { return authorizedAt; }
+    public Long getLastModifiedBy() { return lastModifiedBy; }
+    public Instant getUpdatedAt() { return updatedAt; }
 }

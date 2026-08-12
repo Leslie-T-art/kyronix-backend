@@ -6,11 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-public interface KriRepository extends JpaRepository<KriRecord, UUID> {
+public interface KriRepository extends JpaRepository<KriRecord, Long> {
 
-    Optional<KriRecord> findByKriIdAndDeletedFalse(String kriId);
+    Optional<KriRecord> findByKriId(String kriId);
 
-    List<KriRecord> findAllByDeletedFalse(Sort sort);
+    List<KriRecord> findAll(Sort sort);
 }

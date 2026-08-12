@@ -1,9 +1,7 @@
 package com.kyronic.riskengine.auth.application.dto;
 
-import java.util.UUID;
-
 public record RoleDefinitionResponse(
-        UUID id,
+        Long id,
         String code,
         String name,
         String description,

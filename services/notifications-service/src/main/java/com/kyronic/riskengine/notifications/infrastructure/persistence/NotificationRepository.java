@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface NotificationRepository extends JpaRepository<InAppNotification, UUID> {
 
-    Optional<InAppNotification> findByEventIdAndRecipientUserIdAndType(UUID eventId, UUID recipientUserId, NotificationType type);
+    Optional<InAppNotification> findByEventIdAndRecipientUserIdAndType(UUID eventId, Long recipientUserId, NotificationType type);
 
-    List<InAppNotification> findAllByRecipientUserId(UUID recipientUserId, Sort sort);
+    List<InAppNotification> findAllByRecipientUserId(Long recipientUserId, Sort sort);
 }

@@ -17,7 +17,7 @@ public record NotificationEventRequest(
         @NotBlank String entityType,
         @NotNull UUID entityId,
         @NotBlank String businessReference,
-        @NotEmpty List<UUID> recipientUserIds,
+        @NotEmpty List<Long> recipientUserIds,
         UUID departmentId,
         @NotNull NotificationType type,
         @NotNull NotificationPriority priority,

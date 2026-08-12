@@ -2,6 +2,8 @@ package com.kyronic.riskengine.kri.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
@@ -9,14 +11,14 @@ import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 
 @Entity
 @Table(name = "kri_records")
 public class KriRecord {
 
     @Id
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false, unique = true, length = 32)
     private String kriId;
@@ -87,16 +89,13 @@ public class KriRecord {
     @Column(nullable = false, length = 120)
     private String updatedBy;
 
-    @Column(nullable = false)
-    private boolean deleted;
-
     @Version
     private Long version;
 
     protected KriRecord() {
     }
 
-    public KriRecord(UUID id,
+    public KriRecord(Long id,
                      String kriId,
                      String indicatorName,
                      String category,
@@ -120,7 +119,6 @@ public class KriRecord {
                      String createdBy,
                      Instant updatedAt,
                      String updatedBy,
-                     boolean deleted,
                      Long version) {
         this.id = id;
         this.kriId = kriId;
@@ -146,11 +144,10 @@ public class KriRecord {
         this.createdBy = createdBy;
         this.updatedAt = updatedAt;
         this.updatedBy = updatedBy;
-        this.deleted = deleted;
         this.version = version;
     }
 
-    public UUID getId() {
+    public Long getId() {
         return id;
     }
 
@@ -246,10 +243,6 @@ public class KriRecord {
         return updatedBy;
     }
 
-    public boolean isDeleted() {
-        return deleted;
-    }
-
     public void update(String indicatorName,
                        String category,
                        String owner,
@@ -292,9 +285,4 @@ public class KriRecord {
         this.updatedBy = updatedBy;
     }
 
-    public void markDeleted(Instant updatedAt, String updatedBy) {
-        this.deleted = true;
-        this.updatedAt = updatedAt;
-        this.updatedBy = updatedBy;
-    }
 }

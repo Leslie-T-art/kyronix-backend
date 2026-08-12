@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Transactional
@@ -37,7 +36,7 @@ public class KriService {
         Instant now = Instant.now(clock);
         String actor = currentUserProvider.currentUsername();
         KriRecord record = new KriRecord(
-                UUID.randomUUID(),
+                null,
                 kriIdGenerator.nextId(),
                 request.indicatorName(),
                 request.category(),
@@ -61,7 +60,6 @@ public class KriService {
                 actor,
                 now,
                 actor,
-                false,
                 null
         );
         return toResponse(kriRepository.save(record));
@@ -69,7 +67,7 @@ public class KriService {
 
     @Transactional(readOnly = true)
     public List<KriResponse> list() {
-        return kriRepository.findAllByDeletedFalse(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
+        return kriRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
                 .map(this::toResponse)
                 .toList();
     }
@@ -108,12 +106,11 @@ public class KriService {
 
     public void delete(String kriId) {
         KriRecord record = findActiveByKriId(kriId);
-        record.markDeleted(Instant.now(clock), currentUserProvider.currentUsername());
-        kriRepository.save(record);
+        kriRepository.delete(record);
     }
 
     private KriRecord findActiveByKriId(String kriId) {
-        return kriRepository.findByKriIdAndDeletedFalse(kriId)
+        return kriRepository.findByKriId(kriId)
                 .orElseThrow(() -> new KriNotFoundException(kriId));
     }
 

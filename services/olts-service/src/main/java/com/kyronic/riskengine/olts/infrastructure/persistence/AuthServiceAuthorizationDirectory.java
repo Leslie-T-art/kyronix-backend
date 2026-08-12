@@ -9,7 +9,6 @@ import org.springframework.web.client.RestClient;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Component
 public class AuthServiceAuthorizationDirectory implements AuthorizationDirectory {
@@ -28,7 +27,7 @@ public class AuthServiceAuthorizationDirectory implements AuthorizationDirectory
     }
 
     @Override
-    public List<AuthorizerCandidate> findCandidates(UUID departmentId, String permission) {
+    public List<AuthorizerCandidate> findCandidates(Long departmentId, String permission) {
         List<AuthAuthorizerCandidateResponse> response = restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/v1/internal/authorizers/candidates")
@@ -55,8 +54,8 @@ public class AuthServiceAuthorizationDirectory implements AuthorizationDirectory
     }
 
     private record AuthAuthorizerCandidateResponse(
-            UUID userId,
-            UUID departmentId,
+            Long userId,
+            Long departmentId,
             Set<String> permissions,
             boolean active,
             boolean delegated

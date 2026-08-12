@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.UUID;
 
 @Hidden
 @RestController
@@ -23,7 +22,7 @@ public class AuthorizerDirectoryController {
     }
 
     @GetMapping("/candidates")
-    public List<AuthorizerCandidateResponse> candidates(@RequestParam("departmentId") UUID departmentId,
+    public List<AuthorizerCandidateResponse> candidates(@RequestParam("departmentId") Long departmentId,
                                                         @RequestParam("permission") String permission) {
         return administrationService.listEligibleAuthorizers(departmentId, permission);
     }

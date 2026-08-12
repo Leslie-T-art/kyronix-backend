@@ -17,7 +17,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Set;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,12 +60,12 @@ class AuthControllerTest {
         assertThat(response.data().active()).isTrue();
         assertThat(response.data().locked()).isFalse();
         assertThat(response.data().department()).isEqualTo(new AuthMeResponse.ReferenceAssignment(
-                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                101L,
                 "COM",
                 "Compliance"
         ));
         assertThat(response.data().branch()).isEqualTo(new AuthMeResponse.ReferenceAssignment(
-                UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                201L,
                 "HQ",
                 "Head Office"
         ));
@@ -95,18 +94,18 @@ class AuthControllerTest {
         @Override
         public AuthMeResponse getCurrentUserProfile(String username) {
             return new AuthMeResponse(
-                    UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                    111111L,
                     username,
                     "Risk Inputter",
                     true,
                     false,
                     new AuthMeResponse.ReferenceAssignment(
-                            UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            101L,
                             "COM",
                             "Compliance"
                     ),
                     new AuthMeResponse.ReferenceAssignment(
-                            UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                            201L,
                             "HQ",
                             "Head Office"
                     ),
@@ -132,11 +131,11 @@ class AuthControllerTest {
                     600,
                     Instant.parse("2026-08-05T08:30:00Z"),
                     Instant.parse("2026-08-05T08:40:00Z"),
-                    UUID.fromString("11111111-1111-1111-1111-111111111111"),
+                    111111L,
                     request.username(),
                     "Risk Inputter",
-                    UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
-                    UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                    101L,
+                    201L,
                     Set.of("INPUTTER"),
                     Set.of("OLTS_CREATE", "OLTS_READ")
             );
@@ -158,7 +157,7 @@ class AuthControllerTest {
             this.recordedUsername = command.username();
             this.recordedNewValues = command.newValues();
             return new AuditEventResponse(
-                    UUID.randomUUID(),
+                    1L,
                     command.eventType(),
                     command.action(),
                     "auth-service",

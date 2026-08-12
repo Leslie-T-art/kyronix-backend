@@ -5,17 +5,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-import java.util.UUID;
-
 @Component
 public class NotificationCurrentUserProvider {
 
-    public UUID currentUserId() {
+    public Long currentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
             String userId = jwt.getClaimAsString("userId");
             if (userId != null && !userId.isBlank()) {
-                return UUID.fromString(userId);
+                return Long.valueOf(userId);
             }
         }
         return null;

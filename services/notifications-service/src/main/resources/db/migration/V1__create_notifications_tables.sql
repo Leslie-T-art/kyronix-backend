@@ -5,7 +5,7 @@ create sequence if not exists notifications_service.notification_reference_seq s
 create table if not exists notifications_service.notifications (
     id uuid primary key,
     notification_reference varchar(32) not null unique,
-    recipient_user_id uuid not null,
+    recipient_user_id bigint not null,
     type varchar(50) not null,
     priority varchar(20) not null,
     title varchar(255) not null,
@@ -33,7 +33,7 @@ create table if not exists notifications_service.notification_audit_history (
     id uuid primary key,
     notification_id uuid not null,
     action varchar(50) not null,
-    actor_user_id uuid,
+    actor_user_id bigint,
     actor_username varchar(120) not null,
     occurred_at timestamp with time zone not null,
     correlation_id varchar(120) not null

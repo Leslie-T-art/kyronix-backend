@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -55,7 +54,7 @@ public class AdministrationService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponse getUser(UUID id) {
+    public UserResponse getUser(Long id) {
         return toUserResponse(userAccountRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("user not found")));
     }
@@ -66,7 +65,7 @@ public class AdministrationService {
                 .filter(user -> !user.isDeleted())
                 .orElseThrow(() -> new IllegalArgumentException("user not found"));
 
-        Map<UUID, ReferenceDataEntry> referenceDataById = referenceDataEntryRepository.findAllById(
+        Map<Long, ReferenceDataEntry> referenceDataById = referenceDataEntryRepository.findAllById(
                         List.of(account.getDepartmentId(), account.getBranchId()).stream()
                                 .filter(java.util.Objects::nonNull)
                                 .toList())
@@ -103,7 +102,7 @@ public class AdministrationService {
 
     public UserResponse createUser(UserUpsertRequest request) {
         UserAccount userAccount = new UserAccount(
-                UUID.randomUUID(),
+                null,
                 request.username(),
                 request.fullName(),
                 passwordEncoder.encode(request.password()),
@@ -118,7 +117,7 @@ public class AdministrationService {
         return toUserResponse(userAccountRepository.save(userAccount));
     }
 
-    public UserResponse updateUser(UUID id, UserUpsertRequest request) {
+    public UserResponse updateUser(Long id, UserUpsertRequest request) {
         UserAccount account = userAccountRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("user not found"));
         account.updateProfile(
@@ -135,7 +134,7 @@ public class AdministrationService {
         return toUserResponse(userAccountRepository.save(account));
     }
 
-    public void deleteUser(UUID id) {
+    public void deleteUser(Long id) {
         UserAccount account = userAccountRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("user not found"));
         account.markDeleted();
@@ -147,24 +146,24 @@ public class AdministrationService {
     }
 
     @Transactional(readOnly = true)
-    public RoleDefinitionResponse getRole(UUID id) {
+    public RoleDefinitionResponse getRole(Long id) {
         return toRoleResponse(roleDefinitionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("role not found")));
     }
 
     public RoleDefinitionResponse createRole(RoleDefinitionRequest request) {
-        RoleDefinition roleDefinition = new RoleDefinition(UUID.randomUUID(), request.code(), request.name(), request.description(), request.active());
+        RoleDefinition roleDefinition = new RoleDefinition(null, request.code(), request.name(), request.description(), request.active());
         return toRoleResponse(roleDefinitionRepository.save(roleDefinition));
     }
 
-    public RoleDefinitionResponse updateRole(UUID id, RoleDefinitionRequest request) {
+    public RoleDefinitionResponse updateRole(Long id, RoleDefinitionRequest request) {
         RoleDefinition roleDefinition = roleDefinitionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("role not found"));
         roleDefinition.update(request.code(), request.name(), request.description(), request.active());
         return toRoleResponse(roleDefinitionRepository.save(roleDefinition));
     }
 
-    public void deleteRole(UUID id) {
+    public void deleteRole(Long id) {
         roleDefinitionRepository.deleteById(id);
     }
 
@@ -173,29 +172,29 @@ public class AdministrationService {
     }
 
     @Transactional(readOnly = true)
-    public ReferenceDataResponse getReferenceData(UUID id) {
+    public ReferenceDataResponse getReferenceData(Long id) {
         return toReferenceResponse(referenceDataEntryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("reference data not found")));
     }
 
     public ReferenceDataResponse createReferenceData(ReferenceDataType type, ReferenceDataRequest request) {
-        ReferenceDataEntry entry = new ReferenceDataEntry(UUID.randomUUID(), type, request.code(), request.name(), request.active());
+        ReferenceDataEntry entry = new ReferenceDataEntry(null, type, request.code(), request.name(), request.active());
         return toReferenceResponse(referenceDataEntryRepository.save(entry));
     }
 
-    public ReferenceDataResponse updateReferenceData(UUID id, ReferenceDataRequest request) {
+    public ReferenceDataResponse updateReferenceData(Long id, ReferenceDataRequest request) {
         ReferenceDataEntry entry = referenceDataEntryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("reference data not found"));
         entry.update(request.code(), request.name(), request.active());
         return toReferenceResponse(referenceDataEntryRepository.save(entry));
     }
 
-    public void deleteReferenceData(UUID id) {
+    public void deleteReferenceData(Long id) {
         referenceDataEntryRepository.deleteById(id);
     }
 
     @Transactional(readOnly = true)
-    public List<AuthorizerCandidateResponse> listEligibleAuthorizers(UUID departmentId, String permission) {
+    public List<AuthorizerCandidateResponse> listEligibleAuthorizers(Long departmentId, String permission) {
         return userAccountRepository.findByDepartmentIdAndActiveTrueAndDeletedFalse(departmentId).stream()
                 .filter(account -> !account.isLocked())
                 .filter(account -> account.getPermissions().contains(permission))
