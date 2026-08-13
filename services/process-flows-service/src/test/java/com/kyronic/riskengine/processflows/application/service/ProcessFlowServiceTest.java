@@ -2,20 +2,27 @@ package com.kyronic.riskengine.processflows.application.service;
 
 import com.kyronic.riskengine.processflows.application.dto.ProcessFlowRequest;
 import com.kyronic.riskengine.processflows.domain.ProcessFlowRecord;
+import com.kyronic.riskengine.processflows.domain.ProcessFlowWorkflowStatus;
 import com.kyronic.riskengine.processflows.infrastructure.persistence.ProcessFlowRepository;
+import com.kyronic.riskengine.processflows.infrastructure.storage.MinioProcessFlowDocumentStorage;
+import com.kyronic.riskengine.processflows.infrastructure.storage.StoredDocument;
+import com.kyronic.riskengine.processflows.interfaces.ProcessFlowConflictException;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 
 import java.lang.reflect.Proxy;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProcessFlowServiceTest {
 
@@ -26,6 +33,7 @@ class ProcessFlowServiceTest {
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
                 new FixedCurrentUserProvider("risk.inputter"),
+                new FixedStorage(),
                 Clock.fixed(Instant.parse("2026-08-12T12:00:00Z"), ZoneOffset.UTC)
         );
 
@@ -43,11 +51,12 @@ class ProcessFlowServiceTest {
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
                 new FixedCurrentUserProvider("risk.inputter"),
+                new FixedStorage(),
                 Clock.systemUTC()
         );
 
-        assertThat(service.count(4L, "ACTIVE")).isEqualTo(1L);
-        assertThat(service.count(4L, "INACTIVE")).isZero();
+        assertThat(service.count(4L, "APPROVED")).isEqualTo(1L);
+        assertThat(service.count(4L, "RETURNED")).isZero();
     }
 
     @Test
@@ -58,12 +67,48 @@ class ProcessFlowServiceTest {
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
                 new FixedCurrentUserProvider("risk.inputter"),
+                new FixedStorage(),
                 Clock.systemUTC()
         );
 
         var page = service.list(0, 20, "createdAt", "desc");
 
         assertThat(page.getContent()).hasSize(1);
+    }
+
+    @Test
+    void inputterCannotApproveOwnProcessFlow() {
+        List<ProcessFlowRecord> storedRecords = new ArrayList<>();
+        storedRecords.add(pendingApprovalRecord());
+        ProcessFlowService service = new ProcessFlowService(
+                repository(storedRecords),
+                new FixedGenerator("PF-2026-000001"),
+                new FixedCurrentUserProvider(1001L, "risk.inputter", "INPUTTER"),
+                new FixedStorage(),
+                Clock.systemUTC()
+        );
+
+        assertThatThrownBy(() -> service.approve(1L, "approved"))
+                .isInstanceOf(ProcessFlowConflictException.class)
+                .hasMessageContaining("inputter cannot authorize");
+    }
+
+    @Test
+    void authorizerCanApprovePendingProcessFlow() {
+        List<ProcessFlowRecord> storedRecords = new ArrayList<>();
+        storedRecords.add(pendingApprovalRecord());
+        ProcessFlowService service = new ProcessFlowService(
+                repository(storedRecords),
+                new FixedGenerator("PF-2026-000001"),
+                new FixedCurrentUserProvider(1002L, "dept.head", "AUTHORIZER"),
+                new FixedStorage(),
+                Clock.systemUTC()
+        );
+
+        var response = service.approve(1L, "approved");
+
+        assertThat(response.workflowStatus()).isEqualTo(ProcessFlowWorkflowStatus.APPROVED);
+        assertThat(response.authorizerUsername()).isEqualTo("dept.head");
     }
 
     @SuppressWarnings("unchecked")
@@ -79,11 +124,22 @@ class ProcessFlowServiceTest {
                             record = new ProcessFlowRecord(
                                     ids.incrementAndGet(),
                                     record.getFlowReference(),
-                                    record.getName(),
+                                    record.getProcessFlowName(),
                                     record.getDepartmentId(),
-                                    record.getProcessOwner(),
-                                    record.getStatus(),
                                     record.getDescription(),
+                                    record.getValidFromDate(),
+                                    record.getValidToDate(),
+                                    record.getWorkflowStatus(),
+                                    record.getOriginalFileName(),
+                                    record.getContentType(),
+                                    record.getFileSize(),
+                                    record.getBucketName(),
+                                    record.getObjectKey(),
+                                    record.getInputterUserId(),
+                                    record.getInputterUsername(),
+                                    record.getAuthorizerUserId(),
+                                    record.getAuthorizerUsername(),
+                                    record.getAuthorizerComment(),
                                     record.getCreatedAt(),
                                     record.getCreatedBy(),
                                     record.getUpdatedAt(),
@@ -106,9 +162,9 @@ class ProcessFlowServiceTest {
                     }
                     case "count" -> (long) storedRecords.size();
                     case "countByDepartmentId" -> storedRecords.stream().filter(record -> record.getDepartmentId().equals(args[0])).count();
-                    case "countByStatusIgnoreCase" -> storedRecords.stream().filter(record -> record.getStatus().equalsIgnoreCase((String) args[0])).count();
-                    case "countByDepartmentIdAndStatusIgnoreCase" -> storedRecords.stream()
-                            .filter(record -> record.getDepartmentId().equals(args[0]) && record.getStatus().equalsIgnoreCase((String) args[1]))
+                    case "countByWorkflowStatus" -> storedRecords.stream().filter(record -> record.getWorkflowStatus().equals(args[0])).count();
+                    case "countByDepartmentIdAndWorkflowStatus" -> storedRecords.stream()
+                            .filter(record -> record.getDepartmentId().equals(args[0]) && record.getWorkflowStatus().equals(args[1]))
                             .count();
                     case "delete" -> {
                         ProcessFlowRecord record = (ProcessFlowRecord) args[0];
@@ -124,7 +180,14 @@ class ProcessFlowServiceTest {
     }
 
     private ProcessFlowRequest request() {
-        return new ProcessFlowRequest("Card Disputes", 4L, "Head of Operations", "ACTIVE", "Card dispute escalation flow");
+        ProcessFlowRequest request = new ProcessFlowRequest();
+        request.setProcessFlowName("Card Disputes");
+        request.setDepartmentId(4L);
+        request.setDescription("Card dispute escalation flow");
+        request.setValidFromDate(LocalDate.of(2026, 8, 1));
+        request.setValidToDate(LocalDate.of(2026, 12, 31));
+        request.setDocument(new MockMultipartFile("document", "flow.pdf", "application/pdf", "pdf".getBytes()));
+        return request;
     }
 
     private ProcessFlowRecord existingRecord() {
@@ -133,13 +196,52 @@ class ProcessFlowServiceTest {
                 "PF-2026-000001",
                 "Card Disputes",
                 4L,
-                "Head of Operations",
-                "ACTIVE",
                 "Card dispute escalation flow",
+                LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 12, 31),
+                ProcessFlowWorkflowStatus.APPROVED,
+                "flow.pdf",
+                "application/pdf",
+                3L,
+                "process-flows-dept-4",
+                "PF-2026-000001/flow.pdf",
+                1001L,
+                "risk.inputter",
+                1002L,
+                "dept.head",
+                "approved",
                 Instant.parse("2026-08-10T09:00:00Z"),
                 "system.admin",
                 Instant.parse("2026-08-10T09:00:00Z"),
                 "system.admin",
+                0L
+        );
+    }
+
+    private ProcessFlowRecord pendingApprovalRecord() {
+        return new ProcessFlowRecord(
+                1L,
+                "PF-2026-000001",
+                "Card Disputes",
+                4L,
+                "Card dispute escalation flow",
+                LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 12, 31),
+                ProcessFlowWorkflowStatus.PENDING_APPROVAL,
+                "flow.pdf",
+                "application/pdf",
+                3L,
+                "process-flows-dept-4",
+                "PF-2026-000001/flow.pdf",
+                1001L,
+                "risk.inputter",
+                null,
+                null,
+                null,
+                Instant.parse("2026-08-10T09:00:00Z"),
+                "risk.inputter",
+                Instant.parse("2026-08-10T09:00:00Z"),
+                "risk.inputter",
                 0L
         );
     }
@@ -159,15 +261,60 @@ class ProcessFlowServiceTest {
     }
 
     private static final class FixedCurrentUserProvider extends CurrentUserProvider {
+        private final Long userId;
         private final String username;
+        private final String[] roles;
 
         private FixedCurrentUserProvider(String username) {
+            this(1001L, username, "INPUTTER");
+        }
+
+        private FixedCurrentUserProvider(Long userId, String username, String... roles) {
+            this.userId = userId;
             this.username = username;
+            this.roles = roles;
         }
 
         @Override
         public String currentUsername() {
             return username;
+        }
+
+        @Override
+        public Long currentUserId() {
+            return userId;
+        }
+
+        @Override
+        public boolean hasAnyRole(String... expectedRoles) {
+            for (String role : roles) {
+                for (String expectedRole : expectedRoles) {
+                    if (role.equals(expectedRole)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    private static final class FixedStorage extends MinioProcessFlowDocumentStorage {
+        private FixedStorage() {
+            super(null);
+        }
+
+        @Override
+        public StoredDocument store(Long departmentId, String flowReference, org.springframework.web.multipart.MultipartFile multipartFile) {
+            return new StoredDocument(multipartFile.getOriginalFilename(), multipartFile.getContentType(), multipartFile.getSize(), "process-flows-dept-" + departmentId, flowReference + "/" + multipartFile.getOriginalFilename());
+        }
+
+        @Override
+        public byte[] read(String bucketName, String objectKey) {
+            return "pdf".getBytes();
+        }
+
+        @Override
+        public void delete(String bucketName, String objectKey) {
         }
     }
 }

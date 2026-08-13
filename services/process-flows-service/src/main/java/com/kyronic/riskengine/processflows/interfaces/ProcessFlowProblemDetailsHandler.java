@@ -31,6 +31,12 @@ public class ProcessFlowProblemDetailsHandler {
         );
     }
 
+    @ExceptionHandler(ProcessFlowConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    ApiResponse<Void> handleConflict(ProcessFlowConflictException exception) {
+        return new ApiResponse<>(false, exception.getMessage(), null, java.time.Instant.now(), null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     ValidationErrorResponse handleBeanValidation(MethodArgumentNotValidException exception) {

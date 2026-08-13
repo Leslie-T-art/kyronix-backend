@@ -4,6 +4,7 @@ import com.kyronic.riskengine.common.api.ApiResponse;
 import com.kyronic.riskengine.common.api.PageResponse;
 import com.kyronic.riskengine.processflows.application.dto.ProcessFlowRequest;
 import com.kyronic.riskengine.processflows.application.dto.ProcessFlowResponse;
+import com.kyronic.riskengine.processflows.application.dto.ProcessFlowWorkflowActionRequest;
 import com.kyronic.riskengine.processflows.application.service.ProcessFlowService;
 import com.kyronic.riskengine.processflows.infrastructure.configuration.ProcessFlowsOpenApiConfiguration;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,9 +12,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,16 +39,16 @@ public class ProcessFlowController {
         this.service = service;
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Create process flow")
-    public ApiResponse<ProcessFlowResponse> create(@Valid @RequestBody ProcessFlowRequest request) {
+    public ApiResponse<ProcessFlowResponse> create(@Valid @ModelAttribute ProcessFlowRequest request) {
         return ApiResponse.success("Process flow created successfully", service.create(request), null);
     }
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN') or hasRole('ENTERPRISE_ADMIN') or hasRole('EXECUTIVE')")
     @Operation(summary = "List process flows")
     public ApiResponse<PageResponse<ProcessFlowResponse>> list(@RequestParam(defaultValue = "0") int page,
                                                                @RequestParam(defaultValue = "20") int size,
@@ -54,33 +58,73 @@ public class ProcessFlowController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN') or hasRole('ENTERPRISE_ADMIN') or hasRole('EXECUTIVE')")
     @Operation(summary = "Get process flow")
     public ApiResponse<ProcessFlowResponse> get(@PathVariable Long id) {
         return ApiResponse.success("Process flow retrieved successfully", service.get(id), null);
     }
 
     @GetMapping("/count")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN') or hasRole('ENTERPRISE_ADMIN') or hasRole('EXECUTIVE')")
     @Operation(summary = "Count process flows")
     public ApiResponse<Long> count(@RequestParam(required = false) Long departmentId,
-                                   @RequestParam(required = false) String status) {
-        return ApiResponse.success("Process flow count retrieved successfully", service.count(departmentId, status), null);
+                                   @RequestParam(required = false) String workflowStatus) {
+        return ApiResponse.success("Process flow count retrieved successfully", service.count(departmentId, workflowStatus), null);
     }
 
-    @PutMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Update process flow")
     public ApiResponse<ProcessFlowResponse> update(@PathVariable Long id,
-                                                   @Valid @RequestBody ProcessFlowRequest request) {
+                                                   @Valid @ModelAttribute ProcessFlowRequest request) {
         return ApiResponse.success("Process flow updated successfully", service.update(id, request), null);
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Delete process flow")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ApiResponse.success("Process flow deleted successfully", null, null);
+    }
+
+    @GetMapping("/{id}/document")
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN') or hasRole('ENTERPRISE_ADMIN') or hasRole('EXECUTIVE')")
+    @Operation(summary = "Download process flow document")
+    public ResponseEntity<byte[]> downloadDocument(@PathVariable Long id) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(service.downloadDocument(id));
+    }
+
+    @PostMapping("/{id}/submit")
+    @PreAuthorize("hasRole('INPUTTER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
+    @Operation(summary = "Submit process flow for approval")
+    public ApiResponse<ProcessFlowResponse> submit(@PathVariable Long id) {
+        return ApiResponse.success("Process flow submitted successfully", service.submit(id), null);
+    }
+
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
+    @Operation(summary = "Approve process flow")
+    public ApiResponse<ProcessFlowResponse> approve(@PathVariable Long id,
+                                                    @Valid @RequestBody ProcessFlowWorkflowActionRequest request) {
+        return ApiResponse.success("Process flow approved successfully", service.approve(id, request.comment()), null);
+    }
+
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
+    @Operation(summary = "Reject process flow")
+    public ApiResponse<ProcessFlowResponse> reject(@PathVariable Long id,
+                                                   @Valid @RequestBody ProcessFlowWorkflowActionRequest request) {
+        return ApiResponse.success("Process flow rejected successfully", service.reject(id, request.comment()), null);
+    }
+
+    @PostMapping("/{id}/return")
+    @PreAuthorize("hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
+    @Operation(summary = "Return process flow for correction")
+    public ApiResponse<ProcessFlowResponse> returnForCorrection(@PathVariable Long id,
+                                                                @Valid @RequestBody ProcessFlowWorkflowActionRequest request) {
+        return ApiResponse.success("Process flow returned successfully", service.returnForCorrection(id, request.comment()), null);
     }
 }

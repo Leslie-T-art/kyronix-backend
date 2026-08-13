@@ -24,6 +24,16 @@ public class KriProblemDetailsHandler {
         return problemDetail;
     }
 
+    @ExceptionHandler(TreatmentStrategyNotFoundException.class)
+    ProblemDetail handleTreatmentStrategyNotFound(TreatmentStrategyNotFoundException exception, HttpServletRequest request) {
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problemDetail.setTitle("Treatment strategy not found");
+        problemDetail.setDetail(exception.getMessage());
+        problemDetail.setInstance(java.net.URI.create(request.getRequestURI()));
+        problemDetail.setProperty("errorCode", "TREATMENT_STRATEGY_NOT_FOUND");
+        return problemDetail;
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ProblemDetail handleValidation(MethodArgumentNotValidException exception, HttpServletRequest request) {
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);

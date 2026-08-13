@@ -167,6 +167,30 @@ class NotificationServiceTest {
                 .isInstanceOf(InvalidActionUrlException.class);
     }
 
+    @Test
+    void authServiceEventsResolveToAuthRoute() {
+        NotificationActionUrlFactory factory = new NotificationActionUrlFactory();
+
+        String actionUrl = factory.actionUrl(new NotificationEventRequest(
+                UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                "auth.user.created.v1",
+                "auth-service",
+                "USER_ACCOUNT",
+                UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
+                "USR-2026-00001",
+                List.of(recipientUserId()),
+                null,
+                NotificationType.SYSTEM,
+                NotificationPriority.NORMAL,
+                "User created",
+                "A user was created.",
+                Instant.parse("2026-08-06T08:30:00Z"),
+                "corr-2"
+        ));
+
+        assertThat(actionUrl).isEqualTo("/auth/USR-2026-00001");
+    }
+
     private NotificationService service(List<InAppNotification> notifications,
                                         List<NotificationAuditHistory> audits,
                                         NotificationCurrentUserProvider currentUserProvider,

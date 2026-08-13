@@ -1,1 +1,2 @@
 com.kyronic.riskengine.common.observability.ServletAuditAutoConfiguration
+com.kyronic.riskengine.common.observability.ReactiveAuditAutoConfiguration

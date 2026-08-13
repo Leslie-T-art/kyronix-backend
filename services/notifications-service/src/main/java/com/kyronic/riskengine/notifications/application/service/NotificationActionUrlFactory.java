@@ -4,12 +4,30 @@ import com.kyronic.riskengine.notifications.application.dto.NotificationEventReq
 import com.kyronic.riskengine.notifications.interfaces.InvalidActionUrlException;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
 import java.util.Set;
 
 @Component
 public class NotificationActionUrlFactory {
 
+    private static final Map<String, String> SERVICE_PATHS = Map.ofEntries(
+            Map.entry("api-gateway", "/dashboard"),
+            Map.entry("audit-service", "/audits"),
+            Map.entry("auth-service", "/auth"),
+            Map.entry("dashboard-service", "/dashboard"),
+            Map.entry("document-service", "/documents"),
+            Map.entry("kri-service", "/kri/records"),
+            Map.entry("notifications-service", "/notifications"),
+            Map.entry("olts-service", "/olts/incidents"),
+            Map.entry("process-flows-service", "/process-flows"),
+            Map.entry("risk-register-service", "/risks"),
+            Map.entry("self-assessment-service", "/self-assessments")
+    );
+
     private static final Set<String> APPROVED_PREFIXES = Set.of(
+            "/auth",
+            "/dashboard",
+            "/documents",
             "/olts",
             "/kri",
             "/risks",
@@ -20,14 +38,10 @@ public class NotificationActionUrlFactory {
     );
 
     public String actionUrl(NotificationEventRequest event) {
-        String path = switch (event.sourceService()) {
-            case "olts-service" -> "/olts/incidents/" + event.businessReference();
-            case "kri-service" -> "/kri/records/" + event.businessReference();
-            case "risk-register-service" -> "/risks/" + event.businessReference();
-            case "process-flows-service" -> "/process-flows/" + event.businessReference();
-            case "self-assessment-service" -> "/self-assessments/" + event.businessReference();
-            default -> "/notifications";
-        };
+        String basePath = SERVICE_PATHS.getOrDefault(event.sourceService(), "/notifications");
+        String path = event.businessReference() == null || event.businessReference().isBlank()
+                ? basePath
+                : basePath + "/" + event.businessReference();
 
         if (event.type().name().contains("AUTHORIZATION")) {
             path = path + "/authorization";
