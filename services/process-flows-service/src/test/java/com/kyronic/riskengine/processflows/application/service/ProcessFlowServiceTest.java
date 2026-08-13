@@ -32,7 +32,8 @@ class ProcessFlowServiceTest {
         ProcessFlowService service = new ProcessFlowService(
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
-                new FixedCurrentUserProvider("risk.inputter"),
+                new FixedCurrentUserProvider(1001L, 4L, "risk.inputter"),
+                new NoOpNotificationPublisher(),
                 new FixedStorage(),
                 Clock.fixed(Instant.parse("2026-08-12T12:00:00Z"), ZoneOffset.UTC)
         );
@@ -50,7 +51,8 @@ class ProcessFlowServiceTest {
         ProcessFlowService service = new ProcessFlowService(
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
-                new FixedCurrentUserProvider("risk.inputter"),
+                new FixedCurrentUserProvider(1001L, 4L, "risk.inputter"),
+                new NoOpNotificationPublisher(),
                 new FixedStorage(),
                 Clock.systemUTC()
         );
@@ -66,7 +68,8 @@ class ProcessFlowServiceTest {
         ProcessFlowService service = new ProcessFlowService(
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
-                new FixedCurrentUserProvider("risk.inputter"),
+                new FixedCurrentUserProvider(1001L, 4L, "risk.inputter"),
+                new NoOpNotificationPublisher(),
                 new FixedStorage(),
                 Clock.systemUTC()
         );
@@ -83,7 +86,8 @@ class ProcessFlowServiceTest {
         ProcessFlowService service = new ProcessFlowService(
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
-                new FixedCurrentUserProvider(1001L, "risk.inputter", "INPUTTER"),
+                new FixedCurrentUserProvider(1001L, 4L, "risk.inputter", "INPUTTER"),
+                new NoOpNotificationPublisher(),
                 new FixedStorage(),
                 Clock.systemUTC()
         );
@@ -100,7 +104,8 @@ class ProcessFlowServiceTest {
         ProcessFlowService service = new ProcessFlowService(
                 repository(storedRecords),
                 new FixedGenerator("PF-2026-000001"),
-                new FixedCurrentUserProvider(1002L, "dept.head", "AUTHORIZER"),
+                new FixedCurrentUserProvider(1002L, 4L, "dept.head", "AUTHORIZER"),
+                new NoOpNotificationPublisher(),
                 new FixedStorage(),
                 Clock.systemUTC()
         );
@@ -123,12 +128,13 @@ class ProcessFlowServiceTest {
                         if (record.getId() == null) {
                             record = new ProcessFlowRecord(
                                     ids.incrementAndGet(),
-                                    record.getFlowReference(),
-                                    record.getProcessFlowName(),
-                                    record.getDepartmentId(),
-                                    record.getDescription(),
-                                    record.getValidFromDate(),
-                                    record.getValidToDate(),
+                            record.getFlowReference(),
+                            record.getProcessFlowName(),
+                            record.getDepartmentId(),
+                            record.getProcessOwner(),
+                            record.getDescription(),
+                            record.getValidFromDate(),
+                            record.getValidToDate(),
                                     record.getWorkflowStatus(),
                                     record.getOriginalFileName(),
                                     record.getContentType(),
@@ -196,6 +202,7 @@ class ProcessFlowServiceTest {
                 "PF-2026-000001",
                 "Card Disputes",
                 4L,
+                "risk.inputter",
                 "Card dispute escalation flow",
                 LocalDate.of(2026, 8, 1),
                 LocalDate.of(2026, 12, 31),
@@ -224,6 +231,7 @@ class ProcessFlowServiceTest {
                 "PF-2026-000001",
                 "Card Disputes",
                 4L,
+                "risk.inputter",
                 "Card dispute escalation flow",
                 LocalDate.of(2026, 8, 1),
                 LocalDate.of(2026, 12, 31),
@@ -260,19 +268,36 @@ class ProcessFlowServiceTest {
         }
     }
 
+    private static final class NoOpNotificationPublisher implements ProcessFlowNotificationPublisher {
+        @Override
+        public void publishApproved(ProcessFlowRecord record) {
+        }
+
+        @Override
+        public void publishRejected(ProcessFlowRecord record) {
+        }
+
+        @Override
+        public void publishReturned(ProcessFlowRecord record) {
+        }
+    }
+
     private static final class FixedCurrentUserProvider extends CurrentUserProvider {
         private final Long userId;
+        private final Long departmentId;
         private final String username;
         private final String[] roles;
 
-        private FixedCurrentUserProvider(String username) {
-            this(1001L, username, "INPUTTER");
-        }
-
-        private FixedCurrentUserProvider(Long userId, String username, String... roles) {
+        private FixedCurrentUserProvider(Long userId, Long departmentId, String username, String... roles) {
             this.userId = userId;
+            this.departmentId = departmentId;
             this.username = username;
             this.roles = roles;
+        }
+
+        @Override
+        public Long currentDepartmentId() {
+            return departmentId;
         }
 
         @Override

@@ -28,7 +28,7 @@ class ProcessFlowControllerTest {
 
     private static final class FixedService extends ProcessFlowService {
         private FixedService() {
-            super(null, null, null, null, null);
+            super(null, null, null, null, null, null);
         }
 
         @Override

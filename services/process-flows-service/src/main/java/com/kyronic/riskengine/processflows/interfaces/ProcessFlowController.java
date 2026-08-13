@@ -50,17 +50,17 @@ public class ProcessFlowController {
     @GetMapping
     @PreAuthorize("hasRole('INPUTTER') or hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN') or hasRole('ENTERPRISE_ADMIN') or hasRole('EXECUTIVE')")
     @Operation(summary = "List process flows")
-    public ApiResponse<PageResponse<ProcessFlowResponse>> list(@RequestParam(defaultValue = "0") int page,
-                                                               @RequestParam(defaultValue = "20") int size,
-                                                               @RequestParam(defaultValue = "createdAt") String sortBy,
-                                                               @RequestParam(defaultValue = "desc") String sortDirection) {
+    public ApiResponse<PageResponse<ProcessFlowResponse>> list(@RequestParam(name = "page", defaultValue = "0") int page,
+                                                               @RequestParam(name = "size", defaultValue = "20") int size,
+                                                               @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+                                                               @RequestParam(name = "sortDirection", defaultValue = "desc") String sortDirection) {
         return ApiResponse.success("Process flows retrieved successfully", PageResponse.from(service.list(page, size, sortBy, sortDirection)), null);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('INPUTTER') or hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN') or hasRole('ENTERPRISE_ADMIN') or hasRole('EXECUTIVE')")
     @Operation(summary = "Get process flow")
-    public ApiResponse<ProcessFlowResponse> get(@PathVariable Long id) {
+    public ApiResponse<ProcessFlowResponse> get(@PathVariable("id") Long id) {
         return ApiResponse.success("Process flow retrieved successfully", service.get(id), null);
     }
 
@@ -75,7 +75,7 @@ public class ProcessFlowController {
     @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('INPUTTER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Update process flow")
-    public ApiResponse<ProcessFlowResponse> update(@PathVariable Long id,
+    public ApiResponse<ProcessFlowResponse> update(@PathVariable("id") Long id,
                                                    @Valid @ModelAttribute ProcessFlowRequest request) {
         return ApiResponse.success("Process flow updated successfully", service.update(id, request), null);
     }
@@ -83,7 +83,7 @@ public class ProcessFlowController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('INPUTTER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Delete process flow")
-    public ApiResponse<Void> delete(@PathVariable Long id) {
+    public ApiResponse<Void> delete(@PathVariable("id") Long id) {
         service.delete(id);
         return ApiResponse.success("Process flow deleted successfully", null, null);
     }
@@ -91,7 +91,7 @@ public class ProcessFlowController {
     @GetMapping("/{id}/document")
     @PreAuthorize("hasRole('INPUTTER') or hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN') or hasRole('ENTERPRISE_ADMIN') or hasRole('EXECUTIVE')")
     @Operation(summary = "Download process flow document")
-    public ResponseEntity<byte[]> downloadDocument(@PathVariable Long id) {
+    public ResponseEntity<byte[]> downloadDocument(@PathVariable("id") Long id) {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(service.downloadDocument(id));
@@ -100,14 +100,14 @@ public class ProcessFlowController {
     @PostMapping("/{id}/submit")
     @PreAuthorize("hasRole('INPUTTER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Submit process flow for approval")
-    public ApiResponse<ProcessFlowResponse> submit(@PathVariable Long id) {
+    public ApiResponse<ProcessFlowResponse> submit(@PathVariable("id") Long id) {
         return ApiResponse.success("Process flow submitted successfully", service.submit(id), null);
     }
 
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Approve process flow")
-    public ApiResponse<ProcessFlowResponse> approve(@PathVariable Long id,
+    public ApiResponse<ProcessFlowResponse> approve(@PathVariable("id") Long id,
                                                     @Valid @RequestBody ProcessFlowWorkflowActionRequest request) {
         return ApiResponse.success("Process flow approved successfully", service.approve(id, request.comment()), null);
     }
@@ -115,7 +115,7 @@ public class ProcessFlowController {
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Reject process flow")
-    public ApiResponse<ProcessFlowResponse> reject(@PathVariable Long id,
+    public ApiResponse<ProcessFlowResponse> reject(@PathVariable("id") Long id,
                                                    @Valid @RequestBody ProcessFlowWorkflowActionRequest request) {
         return ApiResponse.success("Process flow rejected successfully", service.reject(id, request.comment()), null);
     }
@@ -123,7 +123,7 @@ public class ProcessFlowController {
     @PostMapping("/{id}/return")
     @PreAuthorize("hasRole('AUTHORIZER') or hasRole('DEPARTMENT_HEAD') or hasRole('SYSTEM_ADMIN')")
     @Operation(summary = "Return process flow for correction")
-    public ApiResponse<ProcessFlowResponse> returnForCorrection(@PathVariable Long id,
+    public ApiResponse<ProcessFlowResponse> returnForCorrection(@PathVariable("id") Long id,
                                                                 @Valid @RequestBody ProcessFlowWorkflowActionRequest request) {
         return ApiResponse.success("Process flow returned successfully", service.returnForCorrection(id, request.comment()), null);
     }

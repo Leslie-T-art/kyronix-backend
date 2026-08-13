@@ -18,6 +18,8 @@ spring:
     default-schema: process_flows_service
     schemas: process_flows_service
     table: process_flows_service_schema_history
+  kafka:
+    bootstrap-servers: localhost:9092
 management:
   endpoints:
     web:

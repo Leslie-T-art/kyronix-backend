@@ -29,17 +29,20 @@ public class ProcessFlowService {
     private final ProcessFlowRepository repository;
     private final ProcessFlowReferenceGenerator referenceGenerator;
     private final CurrentUserProvider currentUserProvider;
+    private final ProcessFlowNotificationPublisher notificationPublisher;
     private final MinioProcessFlowDocumentStorage documentStorage;
     private final Clock clock;
 
     public ProcessFlowService(ProcessFlowRepository repository,
                               ProcessFlowReferenceGenerator referenceGenerator,
                               CurrentUserProvider currentUserProvider,
+                              ProcessFlowNotificationPublisher notificationPublisher,
                               MinioProcessFlowDocumentStorage documentStorage,
                               Clock clock) {
         this.repository = repository;
         this.referenceGenerator = referenceGenerator;
         this.currentUserProvider = currentUserProvider;
+        this.notificationPublisher = notificationPublisher;
         this.documentStorage = documentStorage;
         this.clock = clock;
     }
@@ -49,13 +52,18 @@ public class ProcessFlowService {
         Instant now = Instant.now(clock);
         Long actorUserId = currentUserProvider.currentUserId();
         String actor = currentUserProvider.currentUsername();
+        Long departmentId = currentUserProvider.currentDepartmentId();
+        if (departmentId == null || departmentId <= 0) {
+            throw new ProcessFlowValidationException("departmentId", "Authenticated user must belong to a department");
+        }
         String flowReference = referenceGenerator.nextReference();
-        StoredDocument storedDocument = documentStorage.store(request.getDepartmentId(), flowReference, request.getDocument());
+        StoredDocument storedDocument = documentStorage.store(departmentId, flowReference, request.getDocument());
         ProcessFlowRecord record = new ProcessFlowRecord(
                 null,
                 flowReference,
                 request.getProcessFlowName().trim(),
-                request.getDepartmentId(),
+                departmentId,
+                actor,
                 trimToNull(request.getDescription()),
                 request.getValidFromDate(),
                 request.getValidToDate(),
@@ -116,6 +124,10 @@ public class ProcessFlowService {
     public ProcessFlowResponse update(Long id, ProcessFlowRequest request) {
         validate(request, false);
         ProcessFlowRecord record = findById(id);
+        Long departmentId = currentUserProvider.currentDepartmentId();
+        if (departmentId == null || departmentId <= 0) {
+            throw new ProcessFlowValidationException("departmentId", "Authenticated user must belong to a department");
+        }
         if (record.getWorkflowStatus() != ProcessFlowWorkflowStatus.DRAFT
                 && record.getWorkflowStatus() != ProcessFlowWorkflowStatus.RETURNED) {
             throw new ProcessFlowConflictException("Only draft or returned process flows can be updated");
@@ -123,12 +135,13 @@ public class ProcessFlowService {
         StoredDocument replacement = null;
         MultipartFile file = request.getDocument();
         if (file != null && !file.isEmpty()) {
-            replacement = documentStorage.store(request.getDepartmentId(), record.getFlowReference(), file);
+            replacement = documentStorage.store(departmentId, record.getFlowReference(), file);
             documentStorage.delete(record.getBucketName(), record.getObjectKey());
         }
         record.updateDraft(
                 request.getProcessFlowName().trim(),
-                request.getDepartmentId(),
+                departmentId,
+                currentUserProvider.currentUsername(),
                 trimToNull(request.getDescription()),
                 request.getValidFromDate(),
                 request.getValidToDate(),
@@ -166,7 +179,9 @@ public class ProcessFlowService {
             throw new ProcessFlowConflictException("Only pending approval process flows can be approved");
         }
         record.approve(currentUserProvider.currentUserId(), currentUserProvider.currentUsername(), trimToNull(comment), Instant.now(clock));
-        return toResponse(repository.save(record));
+        ProcessFlowResponse response = toResponse(repository.save(record));
+        notificationPublisher.publishApproved(record);
+        return response;
     }
 
     public ProcessFlowResponse reject(Long id, String comment) {
@@ -179,7 +194,9 @@ public class ProcessFlowService {
             throw new ProcessFlowConflictException("Only pending approval process flows can be rejected");
         }
         record.reject(currentUserProvider.currentUserId(), currentUserProvider.currentUsername(), comment.trim(), Instant.now(clock));
-        return toResponse(repository.save(record));
+        ProcessFlowResponse response = toResponse(repository.save(record));
+        notificationPublisher.publishRejected(record);
+        return response;
     }
 
     public ProcessFlowResponse returnForCorrection(Long id, String comment) {
@@ -192,13 +209,12 @@ public class ProcessFlowService {
             throw new ProcessFlowConflictException("Only pending approval process flows can be returned");
         }
         record.returnForCorrection(currentUserProvider.currentUserId(), currentUserProvider.currentUsername(), comment.trim(), Instant.now(clock));
-        return toResponse(repository.save(record));
+        ProcessFlowResponse response = toResponse(repository.save(record));
+        notificationPublisher.publishReturned(record);
+        return response;
     }
 
     private void validate(ProcessFlowRequest request, boolean requireDocument) {
-        if (request.getDepartmentId() == null || request.getDepartmentId() <= 0) {
-            throw new ProcessFlowValidationException("departmentId", "Department id must be positive");
-        }
         if (request.getValidToDate() != null && request.getValidToDate().isBefore(request.getValidFromDate())) {
             throw new ProcessFlowValidationException("validToDate", "Valid to date must be on or after valid from date");
         }

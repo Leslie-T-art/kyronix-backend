@@ -46,10 +46,10 @@ public class SelfAssessmentController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "List self assessments")
-    public ApiResponse<PageResponse<SelfAssessmentResponse>> list(@RequestParam(defaultValue = "0") int page,
-                                                                  @RequestParam(defaultValue = "20") int size,
-                                                                  @RequestParam(defaultValue = "createdAt") String sortBy,
-                                                                  @RequestParam(defaultValue = "desc") String sortDirection) {
+    public ApiResponse<PageResponse<SelfAssessmentResponse>> list(@RequestParam(name = "page", defaultValue = "0") int page,
+                                                                  @RequestParam(name = "size", defaultValue = "20") int size,
+                                                                  @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+                                                                  @RequestParam(name = "sortDirection", defaultValue = "desc") String sortDirection) {
         return ApiResponse.success(
                 "Self assessments retrieved successfully",
                 PageResponse.from(service.list(page, size, sortBy, sortDirection)),
@@ -67,7 +67,7 @@ public class SelfAssessmentController {
     @GetMapping("/count")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "Count self assessments")
-    public ApiResponse<Long> count(@RequestParam(required = false) Long departmentId) {
+    public ApiResponse<Long> count(@RequestParam(name = "departmentId", required = false) Long departmentId) {
         return ApiResponse.success("Self assessment count retrieved successfully", service.count(departmentId), null);
     }
 

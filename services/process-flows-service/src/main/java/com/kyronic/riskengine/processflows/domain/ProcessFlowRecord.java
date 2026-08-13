@@ -30,6 +30,9 @@ public class ProcessFlowRecord {
     @Column(nullable = false)
     private Long departmentId;
 
+    @Column(nullable = false, length = 120)
+    private String processOwner;
+
     @Column(length = 4000)
     private String description;
 
@@ -94,6 +97,7 @@ public class ProcessFlowRecord {
                              String flowReference,
                              String processFlowName,
                              Long departmentId,
+                             String processOwner,
                              String description,
                              LocalDate validFromDate,
                              LocalDate validToDate,
@@ -117,6 +121,7 @@ public class ProcessFlowRecord {
         this.flowReference = flowReference;
         this.processFlowName = processFlowName;
         this.departmentId = departmentId;
+        this.processOwner = processOwner;
         this.description = description;
         this.validFromDate = validFromDate;
         this.validToDate = validToDate;
@@ -140,6 +145,7 @@ public class ProcessFlowRecord {
 
     public void updateDraft(String processFlowName,
                             Long departmentId,
+                            String processOwner,
                             String description,
                             LocalDate validFromDate,
                             LocalDate validToDate,
@@ -152,6 +158,7 @@ public class ProcessFlowRecord {
                             String updatedBy) {
         this.processFlowName = processFlowName;
         this.departmentId = departmentId;
+        this.processOwner = processOwner;
         this.description = description;
         this.validFromDate = validFromDate;
         this.validToDate = validToDate;
@@ -204,6 +211,7 @@ public class ProcessFlowRecord {
     public String getFlowReference() { return flowReference; }
     public String getProcessFlowName() { return processFlowName; }
     public Long getDepartmentId() { return departmentId; }
+    public String getProcessOwner() { return processOwner; }
     public String getDescription() { return description; }
     public LocalDate getValidFromDate() { return validFromDate; }
     public LocalDate getValidToDate() { return validToDate; }

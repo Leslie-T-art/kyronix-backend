@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @Component
@@ -35,6 +36,22 @@ public class CurrentUserProvider {
             return jwt.getSubject();
         }
         return authentication.getName();
+    }
+
+    public Long currentDepartmentId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return null;
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Jwt jwt) {
+            List<String> departmentIds = jwt.getClaimAsStringList("departmentIds");
+            if (departmentIds == null || departmentIds.isEmpty()) {
+                return null;
+            }
+            return Long.valueOf(departmentIds.get(0));
+        }
+        return null;
     }
 
     public boolean hasAnyRole(String... roles) {
