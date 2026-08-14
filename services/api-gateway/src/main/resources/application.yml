@@ -35,3 +35,6 @@ management:
 kyronic:
   audit:
     service-url: http://localhost:8083
+security:
+  jwt:
+    secret: kyronic-local-jwt-signing-secret-2026

@@ -14,6 +14,7 @@ public class GatewayRoutesConfig {
                 .route("auth-service", route -> route.path("/api/v1/auth/**").uri("http://localhost:8081"))
                 .route("olts-service", route -> route.path("/api/v1/olts/**").uri("http://localhost:8082"))
                 .route("audit-service", route -> route.path("/api/v1/audit/**").uri("http://localhost:8083"))
+                .route("notifications-service", route -> route.path("/api/v1/notifications/**", "/api/v1/internal/notifications/**").uri("http://localhost:8084"))
                 .route("document-service", route -> route.path("/api/v1/documents/**").uri("http://localhost:8085"))
                 .route("dashboard-service", route -> route.path("/api/v1/dashboard/**").uri("http://localhost:8086"))
                 .route("kri-service", route -> route.path("/api/v1/kri/**").uri("http://localhost:8087"))

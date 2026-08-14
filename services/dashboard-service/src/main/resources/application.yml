@@ -3,6 +3,10 @@ server:
 spring:
   application:
     name: dashboard-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/kyronic_platform
+    username: kyronic
+    password: kyronic
 management:
   endpoints:
     web:
@@ -11,3 +15,11 @@ management:
 kyronic:
   audit:
     service-url: http://localhost:8083
+dashboard:
+  auth-datasource:
+    url: jdbc:postgresql://localhost:5433/kyronic_auth
+    username: kyronic
+    password: kyronic
+security:
+  jwt:
+    secret: kyronic-local-jwt-signing-secret-2026
